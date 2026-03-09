@@ -2,12 +2,15 @@ package com.locator360.infrastructure.persistence.mapper;
 
 import com.locator360.core.domain.user.AuthIdentity;
 import com.locator360.core.domain.user.AuthProvider;
+import com.locator360.core.domain.user.Device;
 import com.locator360.core.domain.user.DistanceUnit;
+import com.locator360.core.domain.user.Platform;
 import com.locator360.core.domain.user.TokenType;
 import com.locator360.core.domain.user.User;
 import com.locator360.core.domain.user.UserStatus;
 import com.locator360.core.domain.user.VerificationToken;
 import com.locator360.infrastructure.persistence.postgresql.entity.AuthIdentityJpaEntity;
+import com.locator360.infrastructure.persistence.postgresql.entity.DeviceJpaEntity;
 import com.locator360.infrastructure.persistence.postgresql.entity.UserJpaEntity;
 import com.locator360.infrastructure.persistence.postgresql.entity.VerificationTokenJpaEntity;
 import org.modelmapper.Converter;
@@ -23,6 +26,7 @@ public class PersistenceModelMapperConfig {
     configureUserMappings(modelMapper);
     configureAuthIdentityMappings(modelMapper);
     configureVerificationTokenMappings(modelMapper);
+    configureDeviceMappings(modelMapper);
   }
 
   private void configureUserMappings(ModelMapper modelMapper) {
@@ -86,6 +90,26 @@ public class PersistenceModelMapperConfig {
               src.getType() != null ? TokenType.valueOf(src.getType()) : null,
               src.getToken(), src.getExpiresAt(),
               src.getUsedAt(), src.getCreatedAt());
+        });
+  }
+
+  private void configureDeviceMappings(ModelMapper modelMapper) {
+    // Device → DeviceJpaEntity
+    modelMapper.createTypeMap(Device.class, DeviceJpaEntity.class)
+        .addMappings(mapper -> mapper
+            .using((Converter<Platform, String>) ctx -> ctx.getSource() != null ? ctx.getSource().name() : null)
+            .map(Device::getPlatform, DeviceJpaEntity::setPlatform));
+
+    // DeviceJpaEntity → Device
+    modelMapper.createTypeMap(DeviceJpaEntity.class, Device.class)
+        .setConverter(ctx -> {
+          DeviceJpaEntity src = ctx.getSource();
+          return Device.restore(
+              src.getId(), src.getUserId(),
+              src.getPlatform() != null ? Platform.valueOf(src.getPlatform()) : null,
+              src.getDeviceModel(), src.getOsVersion(), src.getAppVersion(),
+              src.getPushToken(), src.isActive(), src.getLastSeenAt(),
+              src.getCreatedAt(), src.getUpdatedAt());
         });
   }
 }
