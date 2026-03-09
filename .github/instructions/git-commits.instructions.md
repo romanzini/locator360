@@ -215,3 +215,73 @@ Antes de cada `git commit`, verifique:
 - [ ] Sem código comentado ou imports não utilizados
 - [ ] Nenhum dado sensível (senhas, tokens, secrets) no código
 - [ ] Arquivos desnecessários não estão sendo commitados (`.gitignore` atualizado)
+
+## 🔀 Workflow de PR — 1 Commit = 1 Branch = 1 PR
+
+> Cada commit atômico **DEVE** gerar um PR individual. PRs gigantes com múltiplas responsabilidades **NÃO** serão aceitos.
+
+### Fluxo Obrigatório
+
+Para cada unidade de trabalho (commit), execute:
+
+```bash
+# 1. Garantir main atualizada
+git checkout main
+git pull origin main
+
+# 2. Criar branch com nome padronizado
+git checkout -b <type>/<scope>-<descricao-curta>
+
+# 3. Implementar, stage e commit
+git add <arquivos>
+git commit -m "<type>(<scope>): <description>"
+
+# 4. Push e criar PR com auto-merge
+git push -u origin HEAD
+gh pr create --base main --head <branch> --title "<type>(<scope>): <description>" --body "<descrição>"
+gh pr merge <branch> --auto --rebase --delete-branch
+
+# 5. Voltar para main e aguardar merge do CI
+git checkout main
+# (aguardar CI build-and-test finalizar — auto-merge acontece automaticamente)
+git pull origin main
+```
+
+### Convenção de Nomes de Branch
+
+O nome da branch segue o mesmo padrão do commit:
+
+| Tipo | Padrão | Exemplo |
+|------|--------|---------|
+| Feature | `feat/<scope>-<desc>` | `feat/auth-login-service` |
+| Fix | `fix/<scope>-<desc>` | `fix/circle-duplicate-invite` |
+| Test | `test/<scope>-<desc>` | `test/auth-login-tests` |
+| Migration | `migration/<scope>-<desc>` | `migration/auth-devices-table` |
+| Refactor | `refactor/<scope>-<desc>` | `refactor/location-geofence` |
+| Chore | `chore/<desc>` | `chore/add-prometheus-dep` |
+| Style | `style/<scope>-<desc>` | `style/auth-formatting` |
+| Docs | `docs/<scope>-<desc>` | `docs/api-openapi-update` |
+
+### Regras do PR
+- **Título**: Idêntico à mensagem do commit (`<type>(<scope>): <description>`)
+- **Body**: Breve descrição do que foi feito e por quê (1-3 linhas)
+- **Base**: Sempre `main`
+- **Merge strategy**: `--rebase` (linear history)
+- **Auto-merge**: Sempre usar `--auto` para merge automático após CI
+- **Delete branch**: Sempre usar `--delete-branch` para limpeza automática
+
+### Verificação Durante Espera do CI
+
+```bash
+# Ver status dos PRs abertos
+gh pr status
+
+# Ver status do CI em um PR específico
+gh pr checks <número-do-pr>
+```
+
+### ⚠️ Importante
+- **Sempre** `git pull origin main` antes de criar nova branch
+- **Nunca** criar branch a partir de outra branch de feature
+- **Nunca** acumular múltiplos commits em uma branch (exceto se altamente coesos na mesma camada)
+- Se o CI falhar, corrija na mesma branch, faça amend e force-push
