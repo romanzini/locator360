@@ -21,6 +21,10 @@
 
 - Como **novo usuário**, quero **me cadastrar usando e-mail, telefone ou conta social**, para **começar a usar o app rapidamente**.
 
+> Nesta US, o cadastro deve capturar apenas os dados mínimos para criação da conta.
+> Campos de enriquecimento de perfil como `birth_date`, `gender`, `profile_photo_url`, `preferred_language`, `timezone` e `distance_unit`
+> permanecem na entidade `users`, mas são preenchidos com defaults ou posteriormente na **US-004 – Atualizar perfil**.
+
 | # | Camada | Tarefa | Detalhes |
 |---|--------|--------|----------|
 | 1 | DB | Criar migration `users` | Tabela `users` com campos: id, email, phone_number, full_name, first_name, last_name, birth_date, gender, profile_photo_url, preferred_language, timezone, distance_unit, status, created_at, updated_at |
@@ -34,18 +38,18 @@
 | 9 | POUT | Criar interface `UserRepository` | Métodos: save, findById, findByEmail, findByPhone, existsByEmail |
 | 10 | POUT | Criar interface `AuthIdentityRepository` | Métodos: save, findByUserIdAndProvider, findByProviderAndProviderUserId |
 | 11 | POUT | Criar interface `VerificationTokenRepository` | Métodos: save, findByToken, findByUserIdAndType |
-| 12 | PIN | Criar interface `RegisterUserUseCase` | Método: execute(RegisterUserInputDto): RegisterUserOutputDto |
-| 13 | PIN | Criar `RegisterUserInputDto` | Campos: email, phoneNumber, password, fullName, firstName, lastName, provider |
-| 14 | PIN | Criar `RegisterUserOutputDto` | Campos: id, email, phoneNumber, fullName, status |
-| 15 | APP | Implementar `RegisterUserService` | Orquestra: validar duplicidade, criar User (factory), criar AuthIdentity, gerar VerificationToken, salvar via ports |
+| 12 | PIN | Criar interface `RegisterUserUseCase` | Métodos: `registerWithEmail(RegisterWithEmailInputDto)` e `registerWithPhone(RegisterWithPhoneInputDto)` |
+| 13 | PIN | Criar DTOs de registro mínimo | `RegisterWithEmailInputDto` com campos `email`, `password`, `fullName`; `RegisterWithPhoneInputDto` com `phoneNumber`, `verificationCode`, `fullName` |
+| 14 | PIN | Criar `RegisterUserOutputDto` | Campos: id, email, phoneNumber, fullName, firstName, lastName, preferredLanguage, timezone, distanceUnit, status |
+| 15 | APP | Implementar `RegisterUserService` | Orquestra: validar duplicidade, criar User (factory) com defaults de perfil, criar AuthIdentity, gerar VerificationToken, salvar via ports |
 | 16 | INF | Criar `UserJpaEntity` | Mapeamento JPA da tabela `users` |
 | 17 | INF | Criar `AuthIdentityJpaEntity` | Mapeamento JPA da tabela `auth_identities` |
 | 18 | INF | Criar `VerificationTokenJpaEntity` | Mapeamento JPA da tabela `verification_tokens` |
 | 19 | INF | Implementar `UserJpaRepository` | Implementa `UserRepository` com Spring Data |
 | 20 | INF | Implementar `AuthIdentityJpaRepository` | Implementa `AuthIdentityRepository` com Spring Data |
 | 21 | INF | Implementar `VerificationTokenJpaRepository` | Implementa `VerificationTokenRepository` com Spring Data |
-| 22 | API | Criar interface `AuthControllerApi` | Anotações OpenAPI para `POST /api/v1/auth/register` |
-| 23 | API | Implementar `AuthController` | Delega para `RegisterUserUseCase`, retorna 201 Created |
+| 22 | API | Criar interface `AuthControllerApi` | Anotações OpenAPI para `POST /api/v1/auth/register/email` e `POST /api/v1/auth/register/phone` |
+| 23 | API | Implementar `AuthController` | Delega para `RegisterUserUseCase`, retorna 201 Created nos fluxos de e-mail e telefone |
 | 24 | TEST | Testes unitários `User` (Domain) | Testar factory methods, validações de negócio |
 | 25 | TEST | Testes unitários `RegisterUserService` | Testar fluxo completo com mocks dos ports |
 
@@ -104,15 +108,18 @@
 
 - Como **usuário**, quero **editar meu perfil (nome, foto, idioma, fuso, unidade)**, para **personalizar minha experiência**.
 
+> Esta US absorve os dados de enriquecimento de perfil que não entram no cadastro mínimo da **US-001**,
+> incluindo `birth_date`, `gender`, `profile_photo_url`, `preferred_language`, `timezone` e `distance_unit`.
+
 | # | Camada | Tarefa | Detalhes |
 |---|--------|--------|----------|
 | 1 | PIN | Criar interface `UpdateUserProfileUseCase` | Método: execute(UUID userId, UpdateUserProfileInputDto): UserProfileOutputDto |
 | 2 | PIN | Criar interface `GetUserProfileUseCase` | Método: execute(UUID userId): UserProfileOutputDto |
-| 3 | PIN | Criar `UpdateUserProfileInputDto` | Campos: fullName, firstName, lastName, profilePhotoUrl, preferredLanguage, timezone, distanceUnit |
-| 4 | PIN | Criar `UserProfileOutputDto` | Campos: id, email, phoneNumber, fullName, firstName, lastName, profilePhotoUrl, preferredLanguage, timezone, distanceUnit, status, planCode |
-| 5 | APP | Implementar `UpdateUserProfileService` | Buscar User, aplicar alterações, salvar |
+| 3 | PIN | Criar `UpdateUserProfileInputDto` | Campos: fullName, firstName, lastName, birthDate, gender, profilePhotoUrl, preferredLanguage, timezone, distanceUnit |
+| 4 | PIN | Criar `UserProfileOutputDto` | Campos: id, email, phoneNumber, fullName, firstName, lastName, birthDate, gender, profilePhotoUrl, preferredLanguage, timezone, distanceUnit, status, planCode |
+| 5 | APP | Implementar `UpdateUserProfileService` | Buscar User, aplicar alterações parciais de perfil, preservar campos não enviados e salvar |
 | 6 | APP | Implementar `GetUserProfileService` | Buscar User + Subscription ativa, montar output |
-| 7 | API | Criar interface `UserControllerApi` | Anotações OpenAPI para `GET /api/v1/users/me`, `PUT /api/v1/users/me` |
+| 7 | API | Criar interface `UserControllerApi` | Anotações OpenAPI para `GET /api/v1/users/me` e `PATCH /api/v1/users/me` |
 | 8 | API | Implementar `UserController` | Delega para use cases, retorna 200 OK |
 | 9 | TEST | Testes unitários `UpdateUserProfileService` | Testar atualização parcial e validações |
 
