@@ -14,3 +14,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+
+app:
+  jwt:
+    secret: test-secret-key-for-unit-tests-must-be-at-least-32-bytes-long!
+    access-token-expiration: 3600
+    refresh-token-expiration: 604800
