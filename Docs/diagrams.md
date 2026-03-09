@@ -11,13 +11,13 @@
 
 **Sistema central:**
 
-- Sistema FamilySafe 360 (Backend + Banco de Dados + Serviços de Localização)
+- Sistema Locator 360 (Backend + Banco de Dados + Serviços de Localização)
 
 Representação em Mermaid (pode ser colada em .md compatível):
 
 ```mermaid
 graph LR
-  User[User (Mobile App)] --> Backend[FamilySafe 360 Backend]
+  User[User (Mobile App)] --> Backend[Locator 360 Backend]
   Backend --> DB[Database]
   Backend --> Notif[Notification Services]
   Backend --> Maps[Maps and GPS Services]
@@ -49,7 +49,7 @@ Esboço Mermaid (não é UML puro, mas ajuda na visualização):
 graph LR
   actorUser[User]
 
-  subgraph System[FamilySafe 360]
+  subgraph System[Locator 360]
     UC1[Sign up / Login]
     UC2[Manage Circles]
     UC3[Share Location]
@@ -268,7 +268,7 @@ graph LR
     Web["App Web (opcional)"]
   end
 
-  subgraph Backend["FamilySafe 360 Backend API"]
+  subgraph Backend["Locator 360 Backend API"]
     APIGW[API REST /auth, /circles, /locations, ...]
     SAuth["Serviço de Autenticação & Contas"]
     SCircle["Serviço de Círculos & Membros"]

@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Family Locator API
+  title: Locator 360 API
   description: |
-    API REST para o aplicativo Family Locator.
+    API REST para o aplicativo Locator 360.
 
     Escopo desta versão:
     - Autenticação e contas de usuário
@@ -19,9 +19,9 @@ info:
   version: 0.1.0
 
 servers:
-  - url: https://api.familylocator.com/v1
+  - url: https://api.locator360.com/v1
     description: Servidor de produção (exemplo)
-  - url: https://staging.api.familylocator.com/v1
+  - url: https://staging.api.locator360.com/v1
     description: Servidor de homologação (exemplo)
 
 security:
@@ -2242,7 +2242,7 @@ components:
         lastName: "Silva"
         birthDate: "2005-03-10"
         gender: "MALE"
-        profilePhotoUrl: "https://cdn.familysafe360.com/avatars/joao.jpg"
+        profilePhotoUrl: "https://cdn.locator360.com/avatars/joao.jpg"
         preferredLanguage: "pt-BR"
         timezone: "America/Sao_Paulo"
         distanceUnit: "KM"
@@ -2399,7 +2399,7 @@ components:
         id: "c1f8a2c3-1111-4b22-9abc-000000000001"
         name: "Família Silva"
         description: "Círculo principal da família"
-        photoUrl: "https://cdn.familysafe360.com/circles/familia-silva.png"
+        photoUrl: "https://cdn.locator360.com/circles/familia-silva.png"
         colorHex: "#4CAF50"
         privacyLevel: "INVITE_ONLY"
         role: "ADMIN"

@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "FamilySafe 360 API",
-    "description": "Coleção Postman baseada em Docs/openapi.yaml para testes da API FamilySafe 360.",
+    "name": "Locator 360 API",
+    "description": "Coleção Postman baseada em Docs/openapi.yaml para testes da API Locator 360.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "version": "0.1.0"
   },
@@ -1935,7 +1935,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://api.familysafe360.com/v1"
+      "value": "https://api.locator360.com/v1"
     },
     {
       "key": "authToken",

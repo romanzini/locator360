@@ -2,14 +2,14 @@
 applyTo: '**'
 ---
 
-# Family Locator — Referência do Projeto
+# Locator 360 — Referência do Projeto
 
-> Este arquivo contém o contexto específico do projeto Family Locator para orientar a IA durante a implementação.
+> Este arquivo contém o contexto específico do projeto Locator 360 para orientar a IA durante a implementação.
 > Para regras arquiteturais genéricas, consulte `vexa-architecture.instructions.md` e as instructions por camada.
 
 ## Visão Geral
 
-O **Family Locator** (codinome FamilySafe 360) é uma plataforma de monitoramento familiar focada em segurança, rastreamento de localização em tempo real e análise de comportamento de direção. Famílias e grupos criam "Círculos" para compartilhar localização, receber alertas de geofencing e serem notificados em emergências.
+O **Locator 360** é uma plataforma de monitoramento familiar focada em segurança, rastreamento de localização em tempo real e análise de comportamento de direção. Famílias e grupos criam "Círculos" para compartilhar localização, receber alertas de geofencing e serem notificados em emergências.
 
 ## Tech Stack
 

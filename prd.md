@@ -1,16 +1,16 @@
-# PRD: Family Locator (FamilySafe 360) Plataforma Backend
+# PRD: Locator 360 Plataforma Backend
 
 ## 1. Visão Geral do Produto
 
 ### 1.1 Título e Versão do Documento
 
-- **Título do Documento:** PRD: Family Locator (FamilySafe 360) Plataforma Backend
+- **Título do Documento:** PRD: Locator 360 Plataforma Backend
 - **Versão:** 1.0 (Rascunho Inicial)
 - **Status:** Aprovado para Implementação
 
 ### 1.2 Resumo do Produto
 
-**Family Locator (FamilySafe 360)** é uma plataforma robusta de monitoramento familiar projetada para oferecer tranquilidade através de rastreamento de localização em tempo real, alertas de segurança e análise de comportamento de direção. O sistema permite que grupos de confiança (famílias) criem "Círculos" para compartilhar localização ao vivo, receber notificações automáticas quando membros entram ou saem de lugares específicos (Geofencing) e acionar alertas de emergência (SOS).
+**Locator 360** é uma plataforma robusta de monitoramento familiar projetada para oferecer tranquilidade através de rastreamento de localização em tempo real, alertas de segurança e análise de comportamento de direção. O sistema permite que grupos de confiança (famílias) criem "Círculos" para compartilhar localização ao vivo, receber notificações automáticas quando membros entram ou saem de lugares específicos (Geofencing) e acionar alertas de emergência (SOS).
 
 O backend é arquitetado utilizando a **Arquitetura Vexa** (Spring-centric Hexagonal Architecture), alavancando um design orientado a eventos com Apache Kafka para garantir escalabilidade, resiliência e processamento em tempo real de alto volume de dados de localização.
 

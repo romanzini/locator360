@@ -1,4 +1,4 @@
-# Family Locator — Comandos de Desenvolvimento
+# Locator 360 — Comandos de Desenvolvimento
 
 ## 1. Subir a infraestrutura (PostgreSQL, Redis, Kafka, Zookeeper)
 

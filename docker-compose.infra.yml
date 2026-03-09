@@ -1,5 +1,5 @@
 # ============================================================
-# Family Locator — Docker Compose SOMENTE Infraestrutura
+# Locator 360 — Docker Compose SOMENTE Infraestrutura
 # ============================================================
 # Use este arquivo para desenvolver localmente com a IDE,
 # subindo apenas os serviços de infra (PostgreSQL, Redis, Kafka).

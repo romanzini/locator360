@@ -1,8 +1,8 @@
-# Family Locator (FamilySafe 360)
+# Locator 360
 
 ## 📌 Visão Geral
 
-O **Family Locator** (codinome FamilySafe 360) é uma plataforma robusta de monitoramento familiar focada em segurança, rastreamento de localização em tempo real e análise de comportamento de direção. O sistema permite que famílias e grupos de confiança criem "Círculos" para compartilhar sua localização, receber alertas de entrada/saída de lugares (Geofencing) e serem notificados em situações de emergência.
+O **Locator 360** é uma plataforma robusta de monitoramento familiar focada em segurança, rastreamento de localização em tempo real e análise de comportamento de direção. O sistema permite que famílias e grupos de confiança criem "Círculos" para compartilhar sua localização, receber alertas de entrada/saída de lugares (Geofencing) e serem notificados em situações de emergência.
 
 Este projeto backend foi desenhado para ser escalável, seguro e resiliente, utilizando uma arquitetura moderna baseada em domínio.
 
@@ -816,7 +816,7 @@ O sistema utiliza **JWT**. O fluxo consiste em:
 1. **Clonar o repositório:**
 
     ```bash
-    git clone https://github.com/seu-usuario/family-locator.git
+    git clone https://github.com/seu-usuario/locator360.git
     ```
 
 2. **Configurar Banco de Dados:**
@@ -849,4 +849,4 @@ Seguindo a arquitetura, priorizamos testes unitários e de integração:
 
 ---
 
-**Family Locator** — Segurança e conexão para quem você ama.
+**Locator 360** — Segurança e conexão para quem você ama.

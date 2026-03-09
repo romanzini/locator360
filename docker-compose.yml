@@ -1,5 +1,5 @@
 # ============================================================
-# Family Locator — Docker Compose (Desenvolvimento)
+# Locator 360 — Docker Compose (Desenvolvimento)
 # ============================================================
 # Componentes:
 #   - PostgreSQL 15 + PostGIS 3.4 (banco relacional + geoespacial)

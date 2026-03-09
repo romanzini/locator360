@@ -75,7 +75,7 @@ Em ambos os casos, o código que roda em background segue a mesma lógica:
 
 ---
 
-## 6. Mapeamento para o backend FamilySafe 360
+## 6. Mapeamento para o backend Locator 360
 
 Cada evento gerado pelo app vira um item em `events[]` no `POST /locations/stream`, contendo, por exemplo:
 
@@ -88,7 +88,7 @@ Cada evento gerado pelo app vira um item em `events[]` no `POST /locations/strea
 
 ---
 
-## 7. Política simples inicial para o FamilySafe 360
+## 7. Política simples inicial para o Locator 360
 
 - Coleta **contínua** enquanto o usuário:
   - Está logado; e

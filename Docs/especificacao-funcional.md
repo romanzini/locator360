@@ -2,7 +2,7 @@
 
 ## 1. Visão Geral
 
-- **Nome provisório:** FamilySafe 360
+- **Nome do produto:** Locator 360
 - **Objetivo:** Aplicativo móvel para monitoramento de localização em tempo real de membros de grupos familiares, com foco em segurança pessoal, direção segura e alertas de emergência.
 - **Plataformas alvo:** Android, iOS (backend em nuvem com painel web opcional).
 - **Público principal:** Famílias, casais, responsáveis por idosos e crianças, pequenos grupos de confiança.
