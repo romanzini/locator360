@@ -1,0 +1,2021 @@
+{
+  "info": {
+    "name": "FamilySafe 360 API",
+    "description": "Coleção Postman baseada em Docs/openapi.yaml para testes da API FamilySafe 360.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.1.0"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register with Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maria.oliveira@example.com\",\n  \"password\": \"SenhaForte123!\",\n  \"fullName\": \"Maria Oliveira\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login with Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maria.oliveira@example.com\",\n  \"password\": \"SenhaForte123!\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Auth Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Current User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Maria Oliveira Atualizada\",\n  \"preferredLanguage\": \"pt-BR\",\n  \"timezone\": \"America/Sao_Paulo\",\n  \"distanceUnit\": \"KM\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Circles",
+      "item": [
+        {
+          "name": "List My Circles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Circle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Família Silva\",\n  \"description\": \"Grupo da família próxima\",\n  \"colorHex\": \"#4CAF50\",\n  \"privacyLevel\": \"INVITE_ONLY\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Circle Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Circle Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "members"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Join Circle with Invite Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "join"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inviteCode\": \"{{inviteCode}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Circle",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Família Silva (Atualizado)\",\n  \"description\": \"Grupo principal da família\",\n  \"colorHex\": \"#4CAF50\",\n  \"privacyLevel\": \"INVITE_ONLY\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Circle",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "Send Location Stream",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/locations/stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "locations",
+                "stream"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"circleId\": \"{{circleId}}\",\n  \"events\": [\n    {\n      \"latitude\": -23.561414,\n      \"longitude\": -46.655881,\n      \"accuracyMeters\": 10.5,\n      \"speedMps\": 0,\n      \"headingDegrees\": 180,\n      \"altitudeMeters\": 760,\n      \"source\": \"GPS\",\n      \"recordedAt\": \"2026-02-10T13:44:30Z\",\n      \"isMoving\": false,\n      \"batteryLevel\": 72\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Last Location",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/members/{{memberId}}/location",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "members",
+                "{{memberId}}",
+                "location"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Location History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/members/{{memberId}}/locations/history?start=2026-02-01T00:00:00Z&end=2026-02-10T23:59:59Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "members",
+                "{{memberId}}",
+                "locations",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-02-01T00:00:00Z"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-10T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Places",
+      "item": [
+        {
+          "name": "List Places",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Place",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Escola do Pedro\",\n  \"type\": \"SCHOOL\",\n  \"addressText\": \"Av. das Escolas, 500, São Paulo - SP\",\n  \"latitude\": -23.560500,\n  \"longitude\": -46.650000,\n  \"radiusMeters\": 150\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Place Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Place",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Escola do Pedro (Atualizada)\",\n  \"radiusMeters\": 180\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Place",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SOS",
+      "item": [
+        {
+          "name": "Trigger SOS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"circleId\": \"{{circleId}}\",\n  \"location\": {\n    \"latitude\": -23.561414,\n    \"longitude\": -46.655881,\n    \"source\": \"GPS\",\n    \"recordedAt\": \"2026-02-10T13:59:30Z\"\n  },\n  \"message\": \"Acidente na marginal, preciso de ajuda\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update SOS Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sos/{{sosId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sos",
+                "{{sosId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Driving",
+      "item": [
+        {
+          "name": "List Member Drives",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/members/{{memberId}}/drives?start=2026-02-01T00:00:00Z&end=2026-02-10T23:59:59Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "members",
+                "{{memberId}}",
+                "drives"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-02-01T00:00:00Z"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-10T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Drive Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/drives/{{driveId}}?includeEvents=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "drives",
+                "{{driveId}}"
+              ],
+              "query": [
+                {
+                  "key": "includeEvents",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Drive Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/drives/{{driveId}}/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "drives",
+                "{{driveId}}",
+                "events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Driving Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/members/{{memberId}}/driving/summary?start=2026-02-01T00:00:00Z&end=2026-02-10T23:59:59Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "members",
+                "{{memberId}}",
+                "driving",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-02-01T00:00:00Z"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-10T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Chat & Checkins",
+      "item": [
+        {
+          "name": "Send Circle Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "messages"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageText\": \"Cheguei bem em casa!\",\n  \"attachedLocation\": {\n    \"latitude\": -23.561414,\n    \"longitude\": -46.655881,\n    \"accuracyMeters\": 10.5,\n    \"speedMps\": 0,\n    \"headingDegrees\": 180,\n    \"altitudeMeters\": 760,\n    \"source\": \"GPS\",\n    \"recordedAt\": \"2026-02-10T19:00:00Z\",\n    \"isMoving\": false,\n    \"batteryLevel\": 70\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Circle Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Read Receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/messages/{{messageId}}/receipts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "messages",
+                "{{messageId}}",
+                "receipts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"READ\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Message Receipts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/messages/{{messageId}}/receipts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "messages",
+                "{{messageId}}",
+                "receipts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Check-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/checkins",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "checkins"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Cheguei no trabalho\",\n  \"location\": {\n    \"latitude\": -23.561414,\n    \"longitude\": -46.655881,\n    \"source\": \"GPS\",\n    \"recordedAt\": \"2026-02-10T14:10:00Z\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Check-ins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/checkins?start=2026-02-01T00:00:00Z&end=2026-02-10T23:59:59Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "checkins"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-02-01T00:00:00Z"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-10T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notification Preferences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification-preferences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification-preferences"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification-preferences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification-preferences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"circleId\": null,\n  \"notifyPlaceEvents\": true,\n  \"notifyDrives\": true,\n  \"notifyDriveRiskEvents\": true,\n  \"notifySos\": true,\n  \"notifyBatteryLow\": true,\n  \"notifyInvites\": true,\n  \"soundMode\": \"DEFAULT\",\n  \"mutedUntil\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Plans & Subscriptions",
+      "item": [
+        {
+          "name": "List Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Plan Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "plans",
+                "{{planId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"store\": \"GOOGLE_PLAY\",\n  \"storeSubscriptionId\": \"gp_1234567890\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Subscription",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscriptions/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscriptions",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth Advanced",
+      "item": [
+        {
+          "name": "Request Verification Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verification/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verification",
+                "request"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"EMAIL_VERIFICATION\",\n  \"email\": \"maria.oliveira@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verification/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verification",
+                "confirm"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"EMAIL_VERIFICATION\",\n  \"token\": \"{{verificationToken}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password/forgot",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password",
+                "forgot"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"maria.oliveira@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password",
+                "reset"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"SenhaNovaForte123!\"\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "item": [
+        {
+          "name": "List My Devices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Device",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices/{{deviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true,\n  \"pushToken\": \"fcm-token-updated\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Device",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices/{{deviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Circle Governance",
+      "item": [
+        {
+          "name": "List Circle Invites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/invites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "invites"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Circle Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/invites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "invites"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetEmail\": \"novo.membro@example.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Circle Invite",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/invites/{{inviteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "invites",
+                "{{inviteId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Invite by Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/invites/{{inviteCode}}/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "invites",
+                "{{inviteCode}}",
+                "accept"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Circle Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "settings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Circle Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "settings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"drivingAlertLevel\": \"MEDIUM\",\n  \"allowMemberChat\": true,\n  \"allowMemberSos\": true\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sharing & Place Alerts",
+      "item": [
+        {
+          "name": "Get My Sharing State",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/sharing/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "sharing",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Sharing State",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/sharing/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "sharing",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isSharingLocation\": true,\n  \"isHistoryEnabled\": true,\n  \"pausedUntil\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Place Alert Policy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places/{{placeId}}/alert-policies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}",
+                "alert-policies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Place Alert Policy",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places/{{placeId}}/alert-policies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}",
+                "alert-policies"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alertOnEnter\": true,\n  \"alertOnExit\": true,\n  \"daysOfWeek\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\"],\n  \"startTime\": \"08:00\",\n  \"endTime\": \"18:00\",\n  \"targetType\": \"CUSTOM_LIST\",\n  \"targetUserIds\": [\"{{memberId}}\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Place Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/circles/{{circleId}}/places/events?start=2026-02-01T00:00:00Z&end=2026-02-10T23:59:59Z&memberId={{memberId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "circles",
+                "{{circleId}}",
+                "places",
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-02-01T00:00:00Z"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-10T23:59:59Z"
+                },
+                {
+                  "key": "memberId",
+                  "value": "{{memberId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Incidents",
+      "item": [
+        {
+          "name": "List Incidents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/incidents?memberId={{memberId}}&start=2026-02-01T00:00:00Z&end=2026-02-10T23:59:59Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "incidents"
+              ],
+              "query": [
+                {
+                  "key": "memberId",
+                  "value": "{{memberId}}"
+                },
+                {
+                  "key": "start",
+                  "value": "2026-02-01T00:00:00Z"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-10T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Incident Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/incidents/{{incidentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "incidents",
+                "{{incidentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?query={{adminQuery}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "{{adminQuery}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Account Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"BLOCKED\",\n  \"reason\": \"Abuse report confirmed\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User Flag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/flags",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "flags"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flagType\": \"ABUSE_REPORT\",\n  \"notes\": \"Múltiplas denúncias recebidas\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit-logs?targetType=USER&targetId={{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "targetType",
+                  "value": "USER"
+                },
+                {
+                  "key": "targetId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.familysafe360.com/v1"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "description": "Preencher com o accessToken JWT retornado pelo /auth/login ou /auth/register"
+    },
+    {
+      "key": "circleId",
+      "value": "",
+      "description": "ID de um círculo existente"
+    },
+    {
+      "key": "memberId",
+      "value": "",
+      "description": "ID de um membro do círculo"
+    },
+    {
+      "key": "driveId",
+      "value": "",
+      "description": "ID de uma viagem (drive)"
+    },
+    {
+      "key": "messageId",
+      "value": "",
+      "description": "ID de uma mensagem no círculo"
+    },
+    {
+      "key": "planId",
+      "value": "",
+      "description": "ID de um plano para assinatura"
+    },
+    {
+      "key": "sosId",
+      "value": "",
+      "description": "ID de um evento SOS"
+    },
+    {
+      "key": "deviceId",
+      "value": "",
+      "description": "ID de um dispositivo do usuário"
+    },
+    {
+      "key": "placeId",
+      "value": "",
+      "description": "ID de um lugar (place) no círculo"
+    },
+    {
+      "key": "inviteId",
+      "value": "",
+      "description": "ID de um convite de círculo"
+    },
+    {
+      "key": "inviteCode",
+      "value": "",
+      "description": "Código de convite de círculo"
+    },
+    {
+      "key": "incidentId",
+      "value": "",
+      "description": "ID de um incidente detectado"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "description": "ID de um usuário (escopo admin)"
+    },
+    {
+      "key": "adminQuery",
+      "value": "",
+      "description": "Texto de busca para /admin/users"
+    },
+    {
+      "key": "verificationToken",
+      "value": "",
+      "description": "Token/código de verificação"
+    },
+    {
+      "key": "resetToken",
+      "value": "",
+      "description": "Token de redefinição de senha"
+    }
+  ]
+}

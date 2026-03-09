@@ -1,0 +1,3718 @@
+openapi: 3.0.3
+info:
+  title: Family Locator API
+  description: |
+    API REST para o aplicativo Family Locator.
+
+    Escopo desta versão:
+    - Autenticação e contas de usuário
+    - Círculos e membros
+    - Localização em tempo real e histórico
+    - Lugares (geofences)
+    - Direção (drives) com escopo CAR-only nesta versão
+    - SOS (básico)
+  x-release-notes:
+    - date: 2026-02-20
+      version: 0.1.0
+      decisions:
+        - "Driving v1: suporte apenas a mode = CAR"
+  version: 0.1.0
+
+servers:
+  - url: https://api.familylocator.com/v1
+    description: Servidor de produção (exemplo)
+  - url: https://staging.api.familylocator.com/v1
+    description: Servidor de homologação (exemplo)
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: Operações de autenticação e sessão
+  - name: Users
+    description: Perfil do usuário autenticado
+  - name: Circles
+    description: Gestão de círculos e membros
+  - name: Locations
+    description: Localização em tempo real e histórico
+  - name: Places
+    description: Lugares e geofences
+  - name: SOS
+    description: Eventos de emergência (SOS)
+  - name: Driving
+    description: Viagens e relatórios de direção
+  - name: Chat
+    description: Mensagens em círculo
+  - name: Checkins
+    description: Check-ins manuais
+  - name: Notifications
+    description: Preferências e histórico de notificações
+  - name: Plans
+    description: Planos e assinaturas
+  - name: Admin
+    description: Operações administrativas (backoffice)
+
+paths:
+  ######################################
+  # 1. AUTENTICAÇÃO
+  ######################################
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registro de novo usuário
+      description: Cria um novo usuário utilizando e-mail e senha ou telefone.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/RegisterWithEmailRequest"
+                - $ref: "#/components/schemas/RegisterWithPhoneRequest"
+            examples:
+              registerWithEmail:
+                summary: Registro com e-mail e senha
+                value:
+                  email: "maria.oliveira@example.com"
+                  password: "SenhaForte123!"
+                  fullName: "Maria Oliveira"
+              registerWithPhone:
+                summary: Registro com telefone e código SMS
+                value:
+                  phoneNumber: "+5511999999999"
+                  verificationCode: "123456"
+                  fullName: "João da Silva"
+      responses:
+        "201":
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.r..."
+                tokenType: "Bearer"
+                expiresIn: 3600
+                user:
+                  id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+                  email: "maria.oliveira@example.com"
+                  fullName: "Maria Oliveira"
+                  preferredLanguage: "pt-BR"
+                  timezone: "America/Sao_Paulo"
+                  distanceUnit: "KM"
+                  status: "ACTIVE"
+                  createdAt: "2026-02-10T10:15:00Z"
+                  updatedAt: "2026-02-10T10:15:00Z"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Autenticação por e-mail/senha ou telefone/código.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/LoginWithPasswordRequest"
+                - $ref: "#/components/schemas/LoginWithPhoneRequest"
+            examples:
+              loginWithEmail:
+                summary: Login via e-mail
+                value:
+                  email: "maria.oliveira@example.com"
+                  password: "SenhaForte123!"
+              loginWithPhone:
+                summary: Login via telefone
+                value:
+                  phoneNumber: "+5511999999999"
+                  verificationCode: "123456"
+      responses:
+        "200":
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.r..."
+                tokenType: "Bearer"
+                expiresIn: 3600
+                user:
+                  id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+                  email: "maria.oliveira@example.com"
+                  fullName: "Maria Oliveira"
+                  preferredLanguage: "pt-BR"
+                  timezone: "America/Sao_Paulo"
+                  distanceUnit: "KM"
+                  status: "ACTIVE"
+                  createdAt: "2026-02-10T10:15:00Z"
+                  updatedAt: "2026-02-10T10:20:00Z"
+        "400":
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Dados do usuário autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Usuário autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 2. USUÁRIO PERFIL
+  ######################################
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Obter perfil do usuário atual
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Perfil do usuário
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      tags: [Users]
+      summary: Atualizar perfil do usuário atual
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfileRequest"
+      responses:
+        "200":
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 3. CÍRCULOS
+  ######################################
+  /circles:
+    get:
+      tags: [Circles]
+      summary: Listar círculos do usuário atual
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de círculos dos quais o usuário faz parte
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Circle"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Circles]
+      summary: Criar novo círculo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCircleRequest"
+            example:
+              name: "Família Silva"
+              description: "Grupo da família próxima"
+              colorHex: "#4CAF50"
+              privacyLevel: "INVITE_ONLY"
+      responses:
+        "201":
+          description: Círculo criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Circle"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}:
+    parameters:
+      - name: circleId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID do círculo
+    get:
+      tags: [Circles]
+      summary: Obter detalhes de um círculo
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Detalhes do círculo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Circle"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Círculo não encontrado ou sem acesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      tags: [Circles]
+      summary: Atualizar círculo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCircleRequest"
+      responses:
+        "200":
+          description: Círculo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Circle"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão para alterar (não é admin do círculo)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [Circles]
+      summary: Excluir círculo
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Excluído com sucesso
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão para excluir
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/members:
+    get:
+      tags: [Circles]
+      summary: Listar membros do círculo
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de membros
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CircleMember"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Círculo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/join:
+    post:
+      tags: [Circles]
+      summary: Entrar em um círculo com código de convite
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inviteCode:
+                  type: string
+              required: [inviteCode]
+      responses:
+        "200":
+          description: Ingresso no círculo bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Circle"
+        "400":
+          description: Código inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 4. LOCALIZAÇÃO
+  ######################################
+  /locations/stream:
+    post:
+      tags: [Locations]
+      summary: Enviar lote de eventos de localização
+      description: |
+        Endpoint usado pelo app mobile para enviar eventos de localização
+        em lote, para reduzir overhead.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                circleId:
+                  type: string
+                  description: Círculo principal de contexto (opcional)
+                events:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/LocationEventInput"
+              required: [events]
+            example:
+              circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+              events:
+                - latitude: -23.561414
+                  longitude: -46.655881
+                  accuracyMeters: 10.5
+                  speedMps: 0
+                  headingDegrees: 180
+                  altitudeMeters: 760
+                  source: "GPS"
+                  recordedAt: "2026-02-10T13:44:30Z"
+                  isMoving: false
+                  batteryLevel: 72
+                - latitude: -23.561500
+                  longitude: -46.655900
+                  accuracyMeters: 11.0
+                  speedMps: 1.2
+                  headingDegrees: 182
+                  altitudeMeters: 761
+                  source: "GPS"
+                  recordedAt: "2026-02-10T13:44:45Z"
+                  isMoving: true
+                  batteryLevel: 72
+      responses:
+        "202":
+          description: Eventos aceitos para processamento
+        "400":
+          description: Payload inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/members/{memberId}/location:
+    get:
+      tags: [Locations]
+      summary: Obter última localização conhecida de um membro em um círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Última localização conhecida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Location"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Membro não encontrado no círculo ou sem localização
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/members/{memberId}/locations/history:
+    get:
+      tags: [Locations]
+      summary: Obter histórico de localização de um membro
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Início do intervalo (ISO 8601)
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Fim do intervalo (ISO 8601)
+      responses:
+        "200":
+          description: Lista de eventos de localização no intervalo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+        "400":
+          description: Parâmetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 5. LUGARES (PLACES)
+  ######################################
+  /circles/{circleId}/places:
+    get:
+      tags: [Places]
+      summary: Listar lugares de um círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de lugares
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Place"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Places]
+      summary: Criar lugar em um círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaceRequest"
+            example:
+              name: "Escola do Pedro"
+              type: "SCHOOL"
+              addressText: "Av. das Escolas, 500, São Paulo - SP"
+              latitude: -23.560500
+              longitude: -46.650000
+              radiusMeters: 150
+      responses:
+        "201":
+          description: Lugar criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/places/{placeId}:
+    parameters:
+      - name: circleId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: placeId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Places]
+      summary: Obter detalhes de um lugar
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Detalhes do lugar
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Lugar não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      tags: [Places]
+      summary: Atualizar lugar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlaceRequest"
+      responses:
+        "200":
+          description: Lugar atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [Places]
+      summary: Excluir lugar
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Excluído com sucesso
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 6. SOS (BÁSICO)
+  ######################################
+  /sos:
+    post:
+      tags: [SOS]
+      summary: Acionar SOS
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSosRequest"
+            example:
+              circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+              location:
+                latitude: -23.561414
+                longitude: -46.655881
+                source: "GPS"
+                recordedAt: "2026-02-10T13:59:30Z"
+              message: "Acidente na marginal, preciso de ajuda"
+      responses:
+        "201":
+          description: SOS criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosEvent"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sos/{sosId}:
+    patch:
+      tags: [SOS]
+      summary: Atualizar status de SOS
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sosId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSosStatusRequest"
+      responses:
+        "200":
+          description: SOS atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosEvent"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: SOS não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 7. DRIVING (VIAGENS & RELATÓRIOS)
+  ######################################
+  /circles/{circleId}/members/{memberId}/drives:
+    get:
+      tags: [Driving]
+      summary: Listar viagens (drives) de um membro em um círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Início do intervalo (ISO 8601)
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Fim do intervalo (ISO 8601)
+      responses:
+        "200":
+          description: Lista de viagens no intervalo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Drive"
+        "400":
+          description: Parâmetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /drives/{driveId}:
+    get:
+      tags: [Driving]
+      summary: Obter detalhes de uma viagem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: driveId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: includeEvents
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Se verdadeiro, inclui eventos de direção dentro da viagem
+      responses:
+        "200":
+          description: Detalhes da viagem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Drive"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Viagem não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /drives/{driveId}/events:
+    get:
+      tags: [Driving]
+      summary: Listar eventos de direção em uma viagem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: driveId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de eventos de direção
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DriveEvent"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Viagem não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/members/{memberId}/driving/summary:
+    get:
+      tags: [Driving]
+      summary: Obter resumo de direção segura de um membro
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Resumo de direção no período
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrivingSummary"
+        "400":
+          description: Parâmetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 8. CHAT & CHECK-INS
+  ######################################
+  /circles/{circleId}/messages:
+    get:
+      tags: [Chat]
+      summary: Listar mensagens recentes do chat do círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Retorna mensagens criadas após este horário (opcional)
+      responses:
+        "200":
+          description: Lista de mensagens do chat
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CircleMessage"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Chat]
+      summary: Enviar mensagem no chat do círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCircleMessageRequest"
+      responses:
+        "201":
+          description: Mensagem criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircleMessage"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/messages/{messageId}/receipts:
+    get:
+      tags: [Chat]
+      summary: Listar recibos de leitura/entrega de uma mensagem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de recibos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CircleMessageReceipt"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Chat]
+      summary: Registrar recibo de entrega/leitura de uma mensagem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCircleMessageReceiptStatusRequest"
+            example:
+              status: "READ"
+      responses:
+        "200":
+          description: Recibo registrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircleMessageReceipt"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Mensagem não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/checkins:
+    get:
+      tags: [Checkins]
+      summary: Listar check-ins de um círculo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: start
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Lista de check-ins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Checkin"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Checkins]
+      summary: Criar um check-in manual
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCheckinRequest"
+      responses:
+        "201":
+          description: Check-in criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 9. NOTIFICAÇÕES & PREFERÊNCIAS
+  ######################################
+  /notification-preferences:
+    get:
+      tags: [Notifications]
+      summary: Obter preferências de notificação do usuário atual
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: circleId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Se informado, retorna apenas a preferência para este círculo
+      responses:
+        "200":
+          description: Preferência(s) de notificação
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/NotificationPreferences"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/NotificationPreferences"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [Notifications]
+      summary: Atualizar preferências de notificação
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationPreferencesRequest"
+      responses:
+        "200":
+          description: Preferências atualizadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Listar notificações do usuário atual
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtrar por tipo de notificação
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, SENT, FAILED]
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Lista de notificações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 10. PLANOS & ASSINATURAS
+  ######################################
+  /plans:
+    get:
+      tags: [Plans]
+      summary: Listar planos disponíveis
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de planos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+
+  /plans/{planId}:
+    get:
+      tags: [Plans]
+      summary: Obter detalhes de um plano
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detalhes do plano
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "404":
+          description: Plano não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /subscriptions/me:
+    get:
+      tags: [Plans]
+      summary: Obter assinaturas do usuário atual
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de assinaturas do usuário (atual e histórico)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subscription"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /subscriptions:
+    post:
+      tags: [Plans]
+      summary: Criar/registrar uma nova assinatura
+      description: |
+        Registra uma nova assinatura para o usuário atual, tipicamente
+        após confirmação de compra nas lojas (Google Play / App Store).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubscriptionRequest"
+      responses:
+        "201":
+          description: Assinatura criada/atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ######################################
+  # 13. ENDPOINTS COMPLEMENTARES
+  ######################################
+  /auth/verification/request:
+    post:
+      tags: [Auth]
+      summary: Solicitar token/código de verificação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerificationRequest"
+      responses:
+        "202":
+          description: Solicitação de verificação aceita
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/verification/confirm:
+    post:
+      tags: [Auth]
+      summary: Confirmar verificação por token/código
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerificationConfirmRequest"
+      responses:
+        "200":
+          description: Verificação confirmada
+        "400":
+          description: Token/código inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/password/forgot:
+    post:
+      tags: [Auth]
+      summary: Iniciar fluxo de recuperação de senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordForgotRequest"
+      responses:
+        "202":
+          description: Solicitação aceita
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/password/reset:
+    post:
+      tags: [Auth]
+      summary: Redefinir senha com token/código
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequest"
+      responses:
+        "200":
+          description: Senha redefinida com sucesso
+        "400":
+          description: Token/código inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /devices/me:
+    get:
+      tags: [Users]
+      summary: Listar dispositivos ativos do usuário autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de dispositivos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /devices/{deviceId}:
+    patch:
+      tags: [Users]
+      summary: Atualizar estado de um dispositivo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDeviceRequest"
+      responses:
+        "200":
+          description: Dispositivo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Dispositivo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags: [Users]
+      summary: Revogar sessão/dispositivo
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Dispositivo removido/revogado
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Dispositivo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/invites:
+    get:
+      tags: [Circles]
+      summary: Listar convites do círculo
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de convites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CircleInvite"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      tags: [Circles]
+      summary: Criar convite para círculo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCircleInviteRequest"
+      responses:
+        "201":
+          description: Convite criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircleInvite"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/invites/{inviteId}:
+    patch:
+      tags: [Circles]
+      summary: Atualizar status de um convite
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCircleInviteRequest"
+      responses:
+        "200":
+          description: Convite atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircleInvite"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Convite não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/invites/{inviteCode}/accept:
+    post:
+      tags: [Circles]
+      summary: Aceitar convite por código
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Convite aceito
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Circle"
+        "400":
+          description: Convite inválido/expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/settings:
+    get:
+      tags: [Circles]
+      summary: Obter configurações do círculo
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Configurações do círculo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircleSettings"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [Circles]
+      summary: Atualizar configurações do círculo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCircleSettingsRequest"
+      responses:
+        "200":
+          description: Configurações atualizadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircleSettings"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão (não admin)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/sharing/me:
+    get:
+      tags: [Locations]
+      summary: Obter estado de compartilhamento do usuário no círculo
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Estado de compartilhamento
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationSharingState"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [Locations]
+      summary: Atualizar estado de compartilhamento do usuário no círculo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLocationSharingStateRequest"
+      responses:
+        "200":
+          description: Estado atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationSharingState"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/places/{placeId}/alert-policies:
+    get:
+      tags: [Places]
+      summary: Obter política de alertas de um lugar
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Política de alertas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceAlertPolicy"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    put:
+      tags: [Places]
+      summary: Criar/atualizar política de alertas de um lugar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlaceAlertPolicyRequest"
+      responses:
+        "200":
+          description: Política atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceAlertPolicy"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /circles/{circleId}/places/events:
+    get:
+      tags: [Places]
+      summary: Listar eventos de entrada/saída de lugares
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: start
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: memberId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de eventos de lugares
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlaceEvent"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /incidents:
+    get:
+      tags: [SOS]
+      summary: Listar incidentes detectados automaticamente
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: memberId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: start
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Lista de incidentes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IncidentDetection"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /incidents/{incidentId}:
+    get:
+      tags: [SOS]
+      summary: Obter detalhes de incidente
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Detalhes do incidente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentDetection"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Incidente não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: Buscar usuários no backoffice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de usuários administrativos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUserSummary"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users/{userId}/status:
+    patch:
+      tags: [Admin]
+      summary: Bloquear/desbloquear conta de usuário
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserAccountStatusRequest"
+      responses:
+        "200":
+          description: Status atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserSummary"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/users/{userId}/flags:
+    post:
+      tags: [Admin]
+      summary: Criar flag administrativa para usuário
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserFlagRequest"
+      responses:
+        "201":
+          description: Flag criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserFlag"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: Consultar logs de auditoria administrativa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: targetType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: targetId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de logs de auditoria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ######################################
+    # SCHEMAS BÁSICOS
+    ######################################
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+      required: [code, message]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        birthDate:
+          type: string
+          format: date
+          nullable: true
+        gender:
+          type: string
+          nullable: true
+        profilePhotoUrl:
+          type: string
+          format: uri
+          nullable: true
+        preferredLanguage:
+          type: string
+          example: pt-BR
+        timezone:
+          type: string
+          example: America/Sao_Paulo
+        distanceUnit:
+          type: string
+          enum: [KM, MILES]
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, PENDING_VERIFICATION]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [
+          id,
+          fullName,
+          preferredLanguage,
+          timezone,
+          distanceUnit,
+          status,
+          createdAt,
+          updatedAt,
+        ]
+      example:
+        id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        email: "joao.silva@example.com"
+        phoneNumber: "+5511999999999"
+        fullName: "João da Silva"
+        firstName: "João"
+        lastName: "Silva"
+        birthDate: "2005-03-10"
+        gender: "MALE"
+        profilePhotoUrl: "https://cdn.familysafe360.com/avatars/joao.jpg"
+        preferredLanguage: "pt-BR"
+        timezone: "America/Sao_Paulo"
+        distanceUnit: "KM"
+        status: "ACTIVE"
+        createdAt: "2026-02-10T10:15:00Z"
+        updatedAt: "2026-02-10T10:20:00Z"
+
+    ######################################
+    # AUTH
+    ######################################
+    RegisterWithEmailRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        fullName:
+          type: string
+      required: [email, password, fullName]
+      example:
+        email: "maria.oliveira@example.com"
+        password: "SenhaForte123!"
+        fullName: "Maria Oliveira"
+
+    RegisterWithPhoneRequest:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+        verificationCode:
+          type: string
+        fullName:
+          type: string
+      required: [phoneNumber, verificationCode, fullName]
+
+    LoginWithPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [email, password]
+      example:
+        email: "maria.oliveira@example.com"
+        password: "SenhaForte123!"
+
+    LoginWithPhoneRequest:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+        verificationCode:
+          type: string
+      required: [phoneNumber, verificationCode]
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Tempo em segundos para expiração do access token
+        user:
+          $ref: "#/components/schemas/User"
+      required: [accessToken, tokenType, expiresIn, user]
+      example:
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.r..."
+        tokenType: "Bearer"
+        expiresIn: 3600
+        user:
+          id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+          email: "joao.silva@example.com"
+          fullName: "João da Silva"
+          preferredLanguage: "pt-BR"
+          timezone: "America/Sao_Paulo"
+          distanceUnit: "KM"
+          status: "ACTIVE"
+          createdAt: "2026-02-10T10:15:00Z"
+          updatedAt: "2026-02-10T10:20:00Z"
+
+    UpdateUserProfileRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        gender:
+          type: string
+        profilePhotoUrl:
+          type: string
+          format: uri
+        preferredLanguage:
+          type: string
+        timezone:
+          type: string
+        distanceUnit:
+          type: string
+          enum: [KM, MILES]
+      additionalProperties: false
+
+    ######################################
+    # CÍRCULOS
+    ######################################
+    Circle:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        photoUrl:
+          type: string
+          format: uri
+          nullable: true
+        colorHex:
+          type: string
+          nullable: true
+        privacyLevel:
+          type: string
+          enum: [OPEN_WITH_CODE, INVITE_ONLY]
+        role:
+          type: string
+          enum: [ADMIN, MEMBER]
+          description: Papel do usuário autenticado neste círculo
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, privacyLevel, role, createdAt, updatedAt]
+      example:
+        id: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        name: "Família Silva"
+        description: "Círculo principal da família"
+        photoUrl: "https://cdn.familysafe360.com/circles/familia-silva.png"
+        colorHex: "#4CAF50"
+        privacyLevel: "INVITE_ONLY"
+        role: "ADMIN"
+        createdAt: "2026-02-01T09:00:00Z"
+        updatedAt: "2026-02-05T12:30:00Z"
+
+    CreateCircleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        photoUrl:
+          type: string
+          format: uri
+        colorHex:
+          type: string
+        privacyLevel:
+          type: string
+          enum: [OPEN_WITH_CODE, INVITE_ONLY]
+      required: [name]
+      example:
+        name: "Família Silva"
+        description: "Grupo da família próxima"
+        colorHex: "#4CAF50"
+        privacyLevel: "INVITE_ONLY"
+
+    UpdateCircleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        photoUrl:
+          type: string
+          format: uri
+        colorHex:
+          type: string
+        privacyLevel:
+          type: string
+          enum: [OPEN_WITH_CODE, INVITE_ONLY]
+      additionalProperties: false
+
+    CircleMember:
+      type: object
+      properties:
+        userId:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, MEMBER]
+        status:
+          type: string
+          enum: [ACTIVE, PENDING, REMOVED]
+        joinedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [userId, fullName, role, status]
+
+    ######################################
+    # LOCALIZAÇÃO
+    ######################################
+    Location:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        circleId:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        accuracyMeters:
+          type: number
+          format: double
+          nullable: true
+        speedMps:
+          type: number
+          format: double
+          nullable: true
+        headingDegrees:
+          type: number
+          format: double
+          nullable: true
+        altitudeMeters:
+          type: number
+          format: double
+          nullable: true
+        source:
+          type: string
+          enum: [GPS, NETWORK, FUSED]
+        recordedAt:
+          type: string
+          format: date-time
+        isMoving:
+          type: boolean
+        batteryLevel:
+          type: integer
+          nullable: true
+      required: [id, userId, latitude, longitude, source, recordedAt]
+      example:
+        id: "loc-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        latitude: -23.561414
+        longitude: -46.655881
+        accuracyMeters: 10.5
+        speedMps: 0
+        headingDegrees: 180
+        altitudeMeters: 760
+        source: "GPS"
+        recordedAt: "2026-02-10T13:45:00Z"
+        isMoving: false
+        batteryLevel: 72
+
+    LocationEventInput:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        accuracyMeters:
+          type: number
+          format: double
+        speedMps:
+          type: number
+          format: double
+        headingDegrees:
+          type: number
+          format: double
+        altitudeMeters:
+          type: number
+          format: double
+        source:
+          type: string
+          enum: [GPS, NETWORK, FUSED]
+        recordedAt:
+          type: string
+          format: date-time
+        isMoving:
+          type: boolean
+        batteryLevel:
+          type: integer
+      required: [latitude, longitude, source, recordedAt]
+      example:
+        latitude: -23.561414
+        longitude: -46.655881
+        accuracyMeters: 12.3
+        speedMps: 5.5
+        headingDegrees: 190
+        altitudeMeters: 755
+        source: "GPS"
+        recordedAt: "2026-02-10T13:44:30Z"
+        isMoving: true
+        batteryLevel: 75
+
+    ######################################
+    # PLACES
+    ######################################
+    Place:
+      type: object
+      properties:
+        id:
+          type: string
+        circleId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [HOME, SCHOOL, WORK, OTHER]
+        addressText:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        radiusMeters:
+          type: number
+          format: double
+        isActive:
+          type: boolean
+        createdByUserId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [
+          id,
+          circleId,
+          name,
+          type,
+          latitude,
+          longitude,
+          radiusMeters,
+          isActive,
+          createdByUserId,
+          createdAt,
+          updatedAt,
+        ]
+      example:
+        id: "plc-001"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        name: "Casa"
+        type: "HOME"
+        addressText: "Rua Exemplo, 123, São Paulo - SP"
+        latitude: -23.561000
+        longitude: -46.656000
+        radiusMeters: 120
+        isActive: true
+        createdByUserId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        createdAt: "2026-02-01T09:10:00Z"
+        updatedAt: "2026-02-01T09:10:00Z"
+
+    CreatePlaceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [HOME, SCHOOL, WORK, OTHER]
+        addressText:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        radiusMeters:
+          type: number
+          format: double
+      required: [name, latitude, longitude, radiusMeters]
+      example:
+        name: "Escola do Pedro"
+        type: "SCHOOL"
+        addressText: "Av. das Escolas, 500, São Paulo - SP"
+        latitude: -23.560500
+        longitude: -46.650000
+        radiusMeters: 150
+
+    UpdatePlaceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [HOME, SCHOOL, WORK, OTHER]
+        addressText:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        radiusMeters:
+          type: number
+          format: double
+        isActive:
+          type: boolean
+      additionalProperties: false
+
+    ######################################
+    # SOS
+    ######################################
+    SosEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        circleId:
+          type: string
+        triggerType:
+          type: string
+          enum: [MANUAL, AUTO_COLLISION_DETECTED]
+        locationId:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [OPEN, RESOLVED, CANCELLED]
+        startedAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, userId, circleId, triggerType, status, startedAt]
+      example:
+        id: "sos-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        triggerType: "MANUAL"
+        locationId: "loc-001"
+        message: "Preciso de ajuda"
+        status: "OPEN"
+        startedAt: "2026-02-10T14:00:00Z"
+        resolvedAt: null
+        cancelledAt: null
+
+    CreateSosRequest:
+      type: object
+      properties:
+        circleId:
+          type: string
+        location:
+          $ref: "#/components/schemas/LocationEventInput"
+        message:
+          type: string
+      required: [circleId]
+      example:
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        location:
+          latitude: -23.561414
+          longitude: -46.655881
+          source: "GPS"
+          recordedAt: "2026-02-10T13:59:30Z"
+        message: "Acidente na marginal"
+
+    UpdateSosStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [RESOLVED, CANCELLED]
+      required: [status]
+
+    ######################################
+    # DRIVING
+    ######################################
+    Drive:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        circleId:
+          type: string
+          nullable: true
+        startLocationId:
+          type: string
+        endLocationId:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        distanceMeters:
+          type: number
+        durationSeconds:
+          type: integer
+        maxSpeedMps:
+          type: number
+        avgSpeedMps:
+          type: number
+        safetyScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        events:
+          type: array
+          description: Opcional, lista de eventos de direção associados
+          items:
+            $ref: "#/components/schemas/DriveEvent"
+      required:
+        [
+          id,
+          userId,
+          startLocationId,
+          endLocationId,
+          startTime,
+          endTime,
+          distanceMeters,
+          durationSeconds,
+          safetyScore,
+        ]
+      example:
+        id: "drv-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        startLocationId: "loc-010"
+        endLocationId: "loc-050"
+        startTime: "2026-02-10T07:30:00Z"
+        endTime: "2026-02-10T07:55:00Z"
+        distanceMeters: 15400
+        durationSeconds: 1500
+        maxSpeedMps: 27.8
+        avgSpeedMps: 10.2
+        safetyScore: 92
+        events:
+          - id: "dre-001"
+            driveId: "drv-001"
+            userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+            eventType: "HARD_BRAKE"
+            severity: "MEDIUM"
+            locationId: "loc-030"
+            speedMps: 18.0
+            occurredAt: "2026-02-10T07:42:10Z"
+
+    DriveEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        driveId:
+          type: string
+        userId:
+          type: string
+        eventType:
+          type: string
+          enum: [SPEEDING, HARD_BRAKE, HARD_ACCEL, HARD_TURN, PHONE_USAGE]
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        locationId:
+          type: string
+          nullable: true
+        speedMps:
+          type: number
+          nullable: true
+        occurredAt:
+          type: string
+          format: date-time
+      required: [id, driveId, userId, eventType, severity, occurredAt]
+      example:
+        id: "dre-001"
+        driveId: "drv-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        eventType: "SPEEDING"
+        severity: "HIGH"
+        locationId: "loc-025"
+        speedMps: 33.3
+        occurredAt: "2026-02-10T07:40:00Z"
+
+    DrivingSummary:
+      type: object
+      properties:
+        totalDrives:
+          type: integer
+        totalDistanceMeters:
+          type: number
+        totalDurationSeconds:
+          type: integer
+        averageSafetyScore:
+          type: number
+          nullable: true
+        highRiskEventsCount:
+          type: integer
+      required:
+        [
+          totalDrives,
+          totalDistanceMeters,
+          totalDurationSeconds,
+          highRiskEventsCount,
+        ]
+      example:
+        totalDrives: 15
+        totalDistanceMeters: 120000
+        totalDurationSeconds: 10800
+        averageSafetyScore: 88.5
+        highRiskEventsCount: 3
+
+    ######################################
+    # CHAT & CHECK-INS
+    ######################################
+    CircleMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        circleId:
+          type: string
+        senderUserId:
+          type: string
+        messageText:
+          type: string
+        messageType:
+          type: string
+          enum: [TEXT, SYSTEM]
+        attachedLocationId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        [id, circleId, senderUserId, messageText, messageType, createdAt]
+      example:
+        id: "msg-001"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        senderUserId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        messageText: "Cheguei na escola"
+        messageType: "TEXT"
+        attachedLocationId: "loc-060"
+        createdAt: "2026-02-10T10:05:00Z"
+
+    CreateCircleMessageRequest:
+      type: object
+      properties:
+        messageText:
+          type: string
+        attachedLocation:
+          $ref: "#/components/schemas/LocationEventInput"
+      required: [messageText]
+      example:
+        messageText: "Saí do trabalho, chego em 30 min"
+        attachedLocation:
+          latitude: -23.562000
+          longitude: -46.658000
+          source: "GPS"
+          recordedAt: "2026-02-10T18:01:00Z"
+
+    CircleMessageReceipt:
+      type: object
+      properties:
+        messageId:
+          type: string
+        userId:
+          type: string
+        status:
+          type: string
+          enum: [DELIVERED, READ]
+        updatedAt:
+          type: string
+          format: date-time
+      required: [messageId, userId, status, updatedAt]
+      example:
+        messageId: "msg-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        status: "READ"
+        updatedAt: "2026-02-10T10:06:30Z"
+
+    UpdateCircleMessageReceiptStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [DELIVERED, READ]
+      required: [status]
+      example:
+        status: "READ"
+
+    Checkin:
+      type: object
+      properties:
+        id:
+          type: string
+        circleId:
+          type: string
+        userId:
+          type: string
+        locationId:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, circleId, userId, locationId, message, createdAt]
+      example:
+        id: "chk-001"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        locationId: "loc-070"
+        message: "Cheguei em casa, tudo bem"
+        createdAt: "2026-02-10T19:10:00Z"
+
+    CreateCheckinRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        location:
+          $ref: "#/components/schemas/LocationEventInput"
+      required: [message]
+      example:
+        message: "Cheguei na academia"
+        location:
+          latitude: -23.565000
+          longitude: -46.660000
+          source: "GPS"
+          recordedAt: "2026-02-10T19:00:00Z"
+
+    ######################################
+    # NOTIFICAÇÕES & PREFERÊNCIAS
+    ######################################
+    NotificationPreferences:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        circleId:
+          type: string
+          nullable: true
+        notifyPlaceEvents:
+          type: boolean
+        notifyDrives:
+          type: boolean
+        notifyDriveRiskEvents:
+          type: boolean
+        notifySos:
+          type: boolean
+        notifyBatteryLow:
+          type: boolean
+        notifyInvites:
+          type: boolean
+        soundMode:
+          type: string
+          enum: [DEFAULT, SILENT, VIBRATE_ONLY]
+        mutedUntil:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        [
+          id,
+          userId,
+          notifyPlaceEvents,
+          notifyDrives,
+          notifyDriveRiskEvents,
+          notifySos,
+          notifyBatteryLow,
+          notifyInvites,
+          soundMode,
+        ]
+      example:
+        id: "np-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        circleId: null
+        notifyPlaceEvents: true
+        notifyDrives: true
+        notifyDriveRiskEvents: true
+        notifySos: true
+        notifyBatteryLow: true
+        notifyInvites: true
+        soundMode: "DEFAULT"
+        mutedUntil: null
+
+    UpdateNotificationPreferencesRequest:
+      type: object
+      properties:
+        circleId:
+          type: string
+          nullable: true
+        notifyPlaceEvents:
+          type: boolean
+        notifyDrives:
+          type: boolean
+        notifyDriveRiskEvents:
+          type: boolean
+        notifySos:
+          type: boolean
+        notifyBatteryLow:
+          type: boolean
+        notifyInvites:
+          type: boolean
+        soundMode:
+          type: string
+          enum: [DEFAULT, SILENT, VIBRATE_ONLY]
+        mutedUntil:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        circleId:
+          type: string
+          nullable: true
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [PENDING, SENT, FAILED]
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, type, title, body, status, createdAt]
+      example:
+        id: "not-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        circleId: "c1f8a2c3-1111-4b22-9abc-000000000001"
+        type: "PLACE_EVENT"
+        title: "Pedro chegou na escola"
+        body: "Pedro entrou em Escola do Pedro às 07:35"
+        payload:
+          placeId: "plc-002"
+          eventType: "ENTER"
+          occurredAt: "2026-02-10T07:35:00Z"
+        status: "SENT"
+        sentAt: "2026-02-10T07:35:05Z"
+        createdAt: "2026-02-10T07:35:05Z"
+
+    ######################################
+    # PLANOS & ASSINATURAS
+    ######################################
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+          nullable: true
+        maxCircles:
+          type: integer
+          nullable: true
+        maxPlacesPerCircle:
+          type: integer
+          nullable: true
+        locationHistoryDays:
+          type: integer
+          nullable: true
+        hasAdvancedDrivingReports:
+          type: boolean
+        hasIncidentDetection:
+          type: boolean
+        priceAmount:
+          type: number
+          nullable: true
+        priceCurrency:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+      required: [id, name, code, isActive]
+      example:
+        id: "plan-free"
+        name: "Gratuito"
+        code: "FREE"
+        description: "Plano gratuito com histórico limitado"
+        maxCircles: 2
+        maxPlacesPerCircle: 5
+        locationHistoryDays: 7
+        hasAdvancedDrivingReports: false
+        hasIncidentDetection: false
+        priceAmount: null
+        priceCurrency: null
+        isActive: true
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        planId:
+          type: string
+        store:
+          type: string
+          enum: [GOOGLE_PLAY, APP_STORE, INTERNAL]
+        storeSubscriptionId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [ACTIVE, CANCELLED, EXPIRED, PENDING]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        renewalDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [id, userId, planId, store, status, startDate, createdAt, updatedAt]
+      example:
+        id: "sub-001"
+        userId: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+        planId: "plan-premium"
+        store: "GOOGLE_PLAY"
+        storeSubscriptionId: "gp_1234567890"
+        status: "ACTIVE"
+        startDate: "2026-02-01T00:00:00Z"
+        endDate: null
+        renewalDate: "2026-03-01T00:00:00Z"
+        createdAt: "2026-02-01T00:00:00Z"
+        updatedAt: "2026-02-01T00:00:00Z"
+
+    CreateSubscriptionRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+        store:
+          type: string
+          enum: [GOOGLE_PLAY, APP_STORE, INTERNAL]
+        storeSubscriptionId:
+          type: string
+          description: Identificador da assinatura na loja (se aplicável)
+      required: [planId, store]
+      example:
+        planId: "plan-premium"
+        store: "GOOGLE_PLAY"
+        storeSubscriptionId: "gp_1234567890"
+
+    ######################################
+    # AUTENTICAÇÃO AVANÇADA & DISPOSITIVOS
+    ######################################
+    VerificationRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [EMAIL_VERIFICATION, PHONE_VERIFICATION]
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+      required: [type]
+
+    VerificationConfirmRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [EMAIL_VERIFICATION, PHONE_VERIFICATION]
+        token:
+          type: string
+      required: [type, token]
+
+    PasswordForgotRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+      additionalProperties: false
+
+    PasswordResetRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          format: password
+      required: [token, newPassword]
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        platform:
+          type: string
+          enum: [ANDROID, IOS, WEB]
+        deviceModel:
+          type: string
+          nullable: true
+        osVersion:
+          type: string
+          nullable: true
+        appVersion:
+          type: string
+          nullable: true
+        pushToken:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        lastSeenAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, userId, platform, isActive, createdAt, updatedAt]
+
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        pushToken:
+          type: string
+        isActive:
+          type: boolean
+      additionalProperties: false
+
+    ######################################
+    # CÍRCULOS - CONVITES/SETTINGS
+    ######################################
+    CircleInvite:
+      type: object
+      properties:
+        id:
+          type: string
+        circleId:
+          type: string
+        invitedByUserId:
+          type: string
+        targetEmail:
+          type: string
+          format: email
+          nullable: true
+        targetPhone:
+          type: string
+          nullable: true
+        inviteCode:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, EXPIRED, CANCELLED]
+        acceptedByUserId:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [
+          id,
+          circleId,
+          invitedByUserId,
+          inviteCode,
+          status,
+          createdAt,
+          updatedAt,
+        ]
+
+    CreateCircleInviteRequest:
+      type: object
+      properties:
+        targetEmail:
+          type: string
+          format: email
+        targetPhone:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    UpdateCircleInviteRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [CANCELLED, EXPIRED]
+      required: [status]
+
+    CircleSettings:
+      type: object
+      properties:
+        circleId:
+          type: string
+        drivingAlertLevel:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        allowMemberChat:
+          type: boolean
+        allowMemberSos:
+          type: boolean
+      required: [circleId, drivingAlertLevel, allowMemberChat, allowMemberSos]
+
+    UpdateCircleSettingsRequest:
+      type: object
+      properties:
+        drivingAlertLevel:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        allowMemberChat:
+          type: boolean
+        allowMemberSos:
+          type: boolean
+      additionalProperties: false
+
+    ######################################
+    # PRIVACIDADE/LOCALIZAÇÃO POR CÍRCULO
+    ######################################
+    LocationSharingState:
+      type: object
+      properties:
+        userId:
+          type: string
+        circleId:
+          type: string
+        isSharingLocation:
+          type: boolean
+        isHistoryEnabled:
+          type: boolean
+        pausedUntil:
+          type: string
+          format: date-time
+          nullable: true
+        lastKnownLocationId:
+          type: string
+          nullable: true
+        lastUpdatedAt:
+          type: string
+          format: date-time
+      required:
+        [userId, circleId, isSharingLocation, isHistoryEnabled, lastUpdatedAt]
+
+    UpdateLocationSharingStateRequest:
+      type: object
+      properties:
+        isSharingLocation:
+          type: boolean
+        isHistoryEnabled:
+          type: boolean
+        pausedUntil:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+
+    ######################################
+    # POLÍTICAS E EVENTOS DE LUGARES
+    ######################################
+    PlaceAlertPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+        placeId:
+          type: string
+        circleId:
+          type: string
+        alertOnEnter:
+          type: boolean
+        alertOnExit:
+          type: boolean
+        daysOfWeek:
+          type: array
+          items:
+            type: string
+            enum: [MON, TUE, WED, THU, FRI, SAT, SUN]
+        startTime:
+          type: string
+          nullable: true
+          example: "08:00"
+        endTime:
+          type: string
+          nullable: true
+          example: "18:00"
+        targetType:
+          type: string
+          enum: [ALL_MEMBERS, ADMINS_ONLY, CUSTOM_LIST]
+        targetUserIds:
+          type: array
+          items:
+            type: string
+      required:
+        [
+          id,
+          placeId,
+          circleId,
+          alertOnEnter,
+          alertOnExit,
+          targetType,
+          targetUserIds,
+        ]
+
+    UpdatePlaceAlertPolicyRequest:
+      type: object
+      properties:
+        alertOnEnter:
+          type: boolean
+        alertOnExit:
+          type: boolean
+        daysOfWeek:
+          type: array
+          items:
+            type: string
+            enum: [MON, TUE, WED, THU, FRI, SAT, SUN]
+        startTime:
+          type: string
+          nullable: true
+        endTime:
+          type: string
+          nullable: true
+        targetType:
+          type: string
+          enum: [ALL_MEMBERS, ADMINS_ONLY, CUSTOM_LIST]
+        targetUserIds:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+
+    PlaceEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        placeId:
+          type: string
+        circleId:
+          type: string
+        userId:
+          type: string
+        eventType:
+          type: string
+          enum: [ENTER, EXIT]
+        locationId:
+          type: string
+          nullable: true
+        occurredAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        [id, placeId, circleId, userId, eventType, occurredAt, createdAt]
+
+    ######################################
+    # INCIDENTES AUTOMÁTICOS
+    ######################################
+    IncidentDetection:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        driveId:
+          type: string
+          nullable: true
+        locationId:
+          type: string
+          nullable: true
+        confidence:
+          type: number
+          format: float
+        sensorSnapshot:
+          type: object
+          additionalProperties: true
+          nullable: true
+        occurredAt:
+          type: string
+          format: date-time
+        linkedSosEventId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, confidence, occurredAt, createdAt]
+
+    ######################################
+    # ADMINISTRAÇÃO
+    ######################################
+    AdminUserSummary:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, PENDING_VERIFICATION]
+        planCode:
+          type: string
+          nullable: true
+      required: [userId, fullName, status]
+
+    UpdateUserAccountStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED]
+        reason:
+          type: string
+          nullable: true
+      required: [status]
+
+    CreateUserFlagRequest:
+      type: object
+      properties:
+        flagType:
+          type: string
+          enum: [ABUSE_REPORT, FRAUD_SUSPECT, OTHER]
+        notes:
+          type: string
+      required: [flagType, notes]
+
+    UserFlag:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        flagType:
+          type: string
+          enum: [ABUSE_REPORT, FRAUD_SUSPECT, OTHER]
+        notes:
+          type: string
+        createdByAdminId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, flagType, notes, createdByAdminId, createdAt]
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        adminUserId:
+          type: string
+        action:
+          type: string
+        targetType:
+          type: string
+        targetId:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, adminUserId, action, targetType, targetId, createdAt]
