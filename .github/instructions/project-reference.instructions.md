@@ -109,7 +109,7 @@ O **Locator 360** é uma plataforma de monitoramento familiar focada em seguran�
 ## Estrutura de Pastas do Backend
 
 ```text
-/src/main/java/com/familylocator
+/src/main/java/com/locator360
 ├── api/                              # Adaptadores de Entrada
 │   ├── rest/                         # Controllers REST (síncrono)
 │   │   ├── auth/
