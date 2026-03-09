@@ -55,6 +55,6 @@ springdoc:
 logging:
   level:
     root: INFO
-    com.familylocator: INFO
+    com.locator360: INFO
   pattern:
     level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

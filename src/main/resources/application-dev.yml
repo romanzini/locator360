@@ -7,4 +7,4 @@ spring:
 
 logging:
   level:
-    com.familylocator: DEBUG
+    com.locator360: DEBUG
