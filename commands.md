@@ -155,3 +155,44 @@ docker exec fl-postgres psql -U fl_user -d family_locator -c "SELECT extname, ex
  postgis   | 3.4.3
  uuid-ossp | 1.1
 ```
+
+## Perfil Solo: proteção da `main` (PR + CI, sem aprovador externo)
+
+> Use quando você estiver trabalhando sozinho no repositório e ainda quiser manter PR obrigatório com check de CI.
+
+```powershell
+$payload = @'
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["build-and-test"]
+  },
+  "enforce_admins": true,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 0,
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false,
+    "require_last_push_approval": false
+  },
+  "restrictions": null,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "required_linear_history": true,
+  "block_creations": false,
+  "required_conversation_resolution": false,
+  "lock_branch": false,
+  "allow_fork_syncing": false
+}
+'@
+
+$tmp = New-TemporaryFile
+$payload | Out-File -FilePath $tmp -Encoding ascii
+gh api --method PUT repos/romanzini/locator360/branches/main/protection --input $tmp
+Remove-Item $tmp -Force
+```
+
+### Validar configuração aplicada
+
+```powershell
+gh api repos/romanzini/locator360/branches/main/protection --jq "{enforce_admins: .enforce_admins.enabled, strict: .required_status_checks.strict, contexts: .required_status_checks.contexts, approvals: .required_pull_request_reviews.required_approving_review_count, conversation_resolution: .required_conversation_resolution.enabled, force_pushes: .allow_force_pushes.enabled, deletions: .allow_deletions.enabled}"
+```
