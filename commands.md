@@ -130,6 +130,74 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register/phone" `
   -Body '{"phoneNumber":"+5511999999999","verificationCode":"123456","fullName":"Ana Santos"}'
 ```
 
+### US-002: login com email
+
+```powershell
+$login = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/login/email" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"email":"maria@example.com","password":"SenhaForte123!"}'
+
+$login | ConvertTo-Json -Depth 5
+$accessToken = $login.accessToken
+$refreshToken = $login.refreshToken
+```
+
+### US-002: login com telefone
+
+```powershell
+$phoneLogin = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/login/phone" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"phoneNumber":"+5511999999999","verificationCode":"123456"}'
+
+$phoneLogin | ConvertTo-Json -Depth 5
+```
+
+### US-002: refresh token
+
+```powershell
+$refresh = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/refresh" `
+  -Method POST -ContentType "application/json" `
+  -Body "{""refreshToken"":""$refreshToken""}"
+
+$refresh | ConvertTo-Json -Depth 5
+```
+
+### US-002: logout
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/logout" `
+  -Method POST `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+
+$status
+```
+
+### US-002: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=AuthControllerTest,LoginServiceTest,RefreshTokenServiceTest,LogoutServiceTest,AuthenticationServiceTest,JwtTokenProviderTest,DeviceTest,DeviceJpaRepositoryAdapterTest" `
+  test "-Dsurefire.useFile=false"
+```
+
+### Observação sobre `/api/v1/users/me`
+
+```text
+- Sem header Authorization: Bearer <token>, a resposta esperada é 401 Unauthorized.
+- No estado atual do projeto, `/api/v1/users/me` ainda não está implementado no backend.
+- Esse endpoint faz parte do US-004 (Atualizar perfil), que ainda está pendente.
+```
+
+### Exemplo futuro para endpoint autenticado
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+```
+
 ## 8. Swagger UI
 
 ```

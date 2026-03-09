@@ -19,9 +19,11 @@ info:
   version: 0.1.0
 
 servers:
-  - url: https://api.locator360.com/v1
+  - url: http://localhost:8080/api/v1
+    description: Servidor local de desenvolvimento
+  - url: https://api.locator360.com/api/v1
     description: Servidor de produção (exemplo)
-  - url: https://staging.api.locator360.com/v1
+  - url: https://staging.api.locator360.com/api/v1
     description: Servidor de homologação (exemplo)
 
 security:
@@ -57,100 +59,132 @@ paths:
   ######################################
   # 1. AUTENTICAÇÃO
   ######################################
-  /auth/register:
+  /auth/register/email:
     post:
       tags: [Auth]
-      summary: Registro de novo usuário
-      description: Cria um novo usuário utilizando e-mail e senha ou telefone.
+      summary: Registro com e-mail e senha
+      description: Cria um novo usuário utilizando e-mail e senha.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: "#/components/schemas/RegisterWithEmailRequest"
-                - $ref: "#/components/schemas/RegisterWithPhoneRequest"
-            examples:
-              registerWithEmail:
-                summary: Registro com e-mail e senha
-                value:
-                  email: "maria.oliveira@example.com"
-                  password: "SenhaForte123!"
-                  fullName: "Maria Oliveira"
-              registerWithPhone:
-                summary: Registro com telefone e código SMS
-                value:
-                  phoneNumber: "+5511999999999"
-                  verificationCode: "123456"
-                  fullName: "João da Silva"
+              $ref: "#/components/schemas/RegisterWithEmailRequest"
+            example:
+              email: "maria.oliveira@example.com"
+              password: "SenhaForte123!"
+              fullName: "Maria Oliveira"
       responses:
         "201":
           description: Usuário criado com sucesso
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/RegisterUserResponse"
               example:
-                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.r..."
-                tokenType: "Bearer"
-                expiresIn: 3600
-                user:
-                  id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
-                  email: "maria.oliveira@example.com"
-                  fullName: "Maria Oliveira"
-                  preferredLanguage: "pt-BR"
-                  timezone: "America/Sao_Paulo"
-                  distanceUnit: "KM"
-                  status: "ACTIVE"
-                  createdAt: "2026-02-10T10:15:00Z"
-                  updatedAt: "2026-02-10T10:15:00Z"
+                id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+                email: "maria.oliveira@example.com"
+                phoneNumber: null
+                fullName: "Maria Oliveira"
+                firstName: "Maria"
+                lastName: "Oliveira"
+                preferredLanguage: "pt-BR"
+                timezone: "America/Sao_Paulo"
+                distanceUnit: "KM"
+                status: "PENDING_VERIFICATION"
+                createdAt: "2026-02-10T10:15:00Z"
+                updatedAt: "2026-02-10T10:15:00Z"
         "400":
           description: Dados inválidos
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Email já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
-  /auth/login:
+  /auth/register/phone:
     post:
       tags: [Auth]
-      summary: Login
-      description: Autenticação por e-mail/senha ou telefone/código.
+      summary: Registro com telefone e código SMS
+      description: Cria um novo usuário utilizando telefone e código de verificação SMS.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: "#/components/schemas/LoginWithPasswordRequest"
-                - $ref: "#/components/schemas/LoginWithPhoneRequest"
-            examples:
-              loginWithEmail:
-                summary: Login via e-mail
-                value:
-                  email: "maria.oliveira@example.com"
-                  password: "SenhaForte123!"
-              loginWithPhone:
-                summary: Login via telefone
-                value:
-                  phoneNumber: "+5511999999999"
-                  verificationCode: "123456"
+              $ref: "#/components/schemas/RegisterWithPhoneRequest"
+            example:
+              phoneNumber: "+5511999999999"
+              verificationCode: "123456"
+              fullName: "João da Silva"
+      responses:
+        "201":
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterUserResponse"
+              example:
+                id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+                email: null
+                phoneNumber: "+5511999999999"
+                fullName: "João da Silva"
+                firstName: "João"
+                lastName: "da Silva"
+                preferredLanguage: "pt-BR"
+                timezone: "America/Sao_Paulo"
+                distanceUnit: "KM"
+                status: "PENDING_VERIFICATION"
+                createdAt: "2026-02-10T10:15:00Z"
+                updatedAt: "2026-02-10T10:15:00Z"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Telefone já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login/email:
+    post:
+      tags: [Auth]
+      summary: Login com e-mail e senha
+      description: Autentica um usuário com e-mail e senha e retorna tokens JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginWithPasswordRequest"
+            example:
+              email: "maria.oliveira@example.com"
+              password: "SenhaForte123!"
       responses:
         "200":
           description: Login bem-sucedido
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/LoginResponse"
               example:
-                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.r..."
+                accessToken: "access_token_123"
+                refreshToken: "refresh_token_123"
                 tokenType: "Bearer"
                 expiresIn: 3600
                 user:
                   id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
                   email: "maria.oliveira@example.com"
+                  phoneNumber: null
                   fullName: "Maria Oliveira"
                   preferredLanguage: "pt-BR"
                   timezone: "America/Sao_Paulo"
@@ -159,25 +193,111 @@ paths:
                   createdAt: "2026-02-10T10:15:00Z"
                   updatedAt: "2026-02-10T10:20:00Z"
         "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
           description: Credenciais inválidas
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /auth/me:
-    get:
+  /auth/login/phone:
+    post:
       tags: [Auth]
-      summary: Dados do usuário autenticado
-      security:
-        - BearerAuth: []
+      summary: Login com telefone
+      description: Autentica um usuário com número de telefone e código de verificação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginWithPhoneRequest"
+            example:
+              phoneNumber: "+5511999999999"
+              verificationCode: "123456"
       responses:
         "200":
-          description: Usuário autenticado
+          description: Login bem-sucedido
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                accessToken: "access_token_456"
+                refreshToken: "refresh_token_456"
+                tokenType: "Bearer"
+                expiresIn: 3600
+                user:
+                  id: "6b0f9b54-0aaf-4f46-9f0a-123456789abc"
+                  email: null
+                  phoneNumber: "+5511999999999"
+                  fullName: "João da Silva"
+                  preferredLanguage: "pt-BR"
+                  timezone: "America/Sao_Paulo"
+                  distanceUnit: "KM"
+                  status: "ACTIVE"
+                  createdAt: "2026-02-10T10:15:00Z"
+                  updatedAt: "2026-02-10T10:20:00Z"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh token
+      description: Gera um novo par de tokens a partir de um refresh token válido.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+            example:
+              refreshToken: "valid_refresh_token"
+      responses:
+        "200":
+          description: Token renovado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Token inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Encerra a sessão do usuário autenticado.
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Logout realizado com sucesso
         "401":
           description: Não autenticado
           content:
@@ -2303,7 +2423,65 @@ components:
           type: string
       required: [phoneNumber, verificationCode]
 
-    AuthResponse:
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required: [refreshToken]
+      example:
+        refreshToken: "valid_refresh_token"
+
+    RegisterUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        preferredLanguage:
+          type: string
+        timezone:
+          type: string
+        distanceUnit:
+          type: string
+          enum: [KM, MILES]
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, PENDING_VERIFICATION]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [
+          id,
+          fullName,
+          preferredLanguage,
+          timezone,
+          distanceUnit,
+          status,
+          createdAt,
+          updatedAt,
+        ]
+
+    LoginResponse:
       type: object
       properties:
         accessToken:
@@ -2317,7 +2495,7 @@ components:
           type: integer
           description: Tempo em segundos para expiração do access token
         user:
-          $ref: "#/components/schemas/User"
+          $ref: "#/components/schemas/LoginUserInfo"
       required: [accessToken, tokenType, expiresIn, user]
       example:
         accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -2334,6 +2512,49 @@ components:
           status: "ACTIVE"
           createdAt: "2026-02-10T10:15:00Z"
           updatedAt: "2026-02-10T10:20:00Z"
+
+    LoginUserInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        preferredLanguage:
+          type: string
+        timezone:
+          type: string
+        distanceUnit:
+          type: string
+          enum: [KM, MILES]
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, PENDING_VERIFICATION]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [
+          id,
+          fullName,
+          preferredLanguage,
+          timezone,
+          distanceUnit,
+          status,
+          createdAt,
+          updatedAt,
+        ]
 
     UpdateUserProfileRequest:
       type: object
