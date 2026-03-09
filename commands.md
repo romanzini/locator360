@@ -59,7 +59,60 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   maven:3.9.9-eclipse-temurin-17 mvn -DskipTests compile
 ```
 
-## 6. Testar os endpoints
+## 6. Workflow Git — Small PR por Commit
+
+> **Regra**: cada commit atômico gera **1 branch + 1 PR**. Usa `--auto` para merge após CI.
+
+### Passo a passo (por commit)
+
+```powershell
+# 1. Criar branch a partir de main atualizada
+git checkout main
+git pull origin main
+git checkout -b <type>/<scope>-<descricao-curta>
+
+# 2. Implementar, stage e commit
+git add <arquivos>
+git commit -m "<type>(<scope>): <description>"
+
+# 3. Push e criar PR com auto-merge
+git push -u origin HEAD
+gh pr create --base main --head (git branch --show-current) `
+  --title "<type>(<scope>): <description>" `
+  --body "<descrição do PR>"
+gh pr merge (git branch --show-current) --auto --rebase --delete-branch
+
+# 4. Voltar para main e aguardar merge
+git checkout main
+# (aguardar CI finalizar — auto-merge acontece automaticamente)
+git pull origin main
+```
+
+### Convenção de nomes de branch
+
+| Tipo | Padrão | Exemplo |
+|------|--------|---------|
+| Feature | `feat/<scope>-<desc>` | `feat/auth-login-service` |
+| Fix | `fix/<scope>-<desc>` | `fix/circle-duplicate-invite` |
+| Test | `test/<scope>-<desc>` | `test/auth-login-tests` |
+| Migration | `migration/<scope>-<desc>` | `migration/auth-devices-table` |
+| Refactor | `refactor/<scope>-<desc>` | `refactor/location-geofence` |
+| Chore | `chore/<desc>` | `chore/add-prometheus-dep` |
+| Style | `style/<scope>-<desc>` | `style/auth-formatting` |
+
+### Verificar status do PR (enquanto espera CI)
+
+```powershell
+gh pr status
+```
+
+### Forçar pull após merge automático
+
+```powershell
+git checkout main; git pull origin main
+```
+
+## 7. Testar os endpoints
 
 ### Registro com email
 
@@ -77,19 +130,19 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register/phone" `
   -Body '{"phoneNumber":"+5511999999999","verificationCode":"123456","fullName":"Ana Santos"}'
 ```
 
-## 7. Swagger UI
+## 8. Swagger UI
 
 ```
 http://localhost:8080/swagger-ui.html
 ```
 
-## 8. Kafka UI
+## 9. Kafka UI
 
 ```
 http://localhost:8090
 ```
 
-## 9. Stack completa (infra + app containerizada)
+## 10. Stack completa (infra + app containerizada)
 
 ```powershell
 docker compose up -d --build
