@@ -1,0 +1,67 @@
+# ============================================================
+
+# Family Locator — .dockerignore
+
+# ============================================================
+
+# Git
+
+.git
+.gitignore
+
+# IDE
+
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Build
+
+target/
+build/
+out/
+*.class
+
+# Maven wrapper (será copiado explicitamente)
+
+# .mvn/
+
+# Docs
+
+Docs/
+prd.md
+README.md
+*.md
+!docker/postgres/init/*.sql
+
+# GitHub
+
+.github/
+
+# Docker
+
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Env
+
+.env
+.env.*
+
+# OS
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+
+*.log
+logs/
+
+# Testes
+
+*.test.js
+*.spec.js
