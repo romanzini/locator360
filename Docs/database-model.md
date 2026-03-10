@@ -483,7 +483,7 @@ Histórico de notificações geradas (para auditoria / depuração).
 - `id` (PK)
 - `user_id` (FK → `users.id`)
 - `circle_id` (FK → `circles.id`, nullable)
-- `type` (ENUM: `PLACE_EVENT`, `DRIVE_START`, `DRIVE_END`, `DRIVE_RISK`, `SOS`, `BATTERY_LOW`, `INVITE`, `SYSTEM`)
+- `type` (ENUM: `PLACE_EVENT`, `DRIVE_START`, `DRIVE_END`, `DRIVE_RISK`, `SOS`, `BATTERY_LOW`, `INVITE`, `MEMBER_JOINED`, `MEMBER_LEFT`, `MEMBER_REMOVED`, `ADMIN_TRANSFERRED`, `SYSTEM`)
 - `title`
 - `body`
 - `payload` (JSON, metadados do evento)

@@ -190,9 +190,12 @@
 | 1 | PIN | Criar interface `JoinCircleUseCase` | Método: execute(UUID userId, JoinCircleInputDto): CircleMemberOutputDto |
 | 2 | PIN | Criar `JoinCircleInputDto` | Campos: inviteCode |
 | 3 | PIN | Criar `CircleMemberOutputDto` | Campos: id, circleId, userId, role, status, joinedAt |
-| 4 | APP | Implementar `JoinCircleService` | Validar código (existência, expiração, status), verificar limite do plano, criar CircleMember, atualizar invite para ACCEPTED |
-| 5 | API | Adicionar endpoint ao `CircleController` | `POST /api/v1/circles/join` |
-| 6 | TEST | Testes unitários `JoinCircleService` | Testar código inválido, expirado, limite atingido |
+| 4 | POUT | Criar interface `NotificationCommandPublisher` | Método: publish(NotificationCommand): void — publica no Kafka `notification.commands`; `NotificationCommand` com campos: type (NotificationType), recipientUserId (UUID), circleId (UUID nullable), payload (Map\<String, Object\>) |
+| 5 | POUT | Criar interface `CircleMemberReadRepository` | Método adicional: findActiveByCircleId(UUID circleId): List\<CircleMember\> — necessário para buscar destinatários da notificação |
+| 6 | APP | Implementar `JoinCircleService` | Validar código (existência, expiração, status), verificar limite do plano, criar CircleMember, atualizar invite para ACCEPTED, publicar `MEMBER_JOINED` para todos os outros membros ativos do círculo via `NotificationCommandPublisher` |
+| 7 | INF | Implementar `KafkaNotificationCommandPublisher` | Implementa `NotificationCommandPublisher` publicando no tópico `notification.commands` particionado por circleId |
+| 8 | API | Adicionar endpoint ao `CircleController` | `POST /api/v1/circles/join` |
+| 9 | TEST | Testes unitários `JoinCircleService` | Testar código inválido, expirado, limite atingido, e verificar publicação de `MEMBER_JOINED` para todos os membros existentes do círculo |
 
 ---
 
@@ -205,12 +208,12 @@
 | 1 | PIN | Criar interface `RemoveMemberUseCase` | Método: execute(UUID adminId, UUID circleId, UUID memberId): void |
 | 2 | PIN | Criar interface `TransferAdminUseCase` | Método: execute(UUID adminId, UUID circleId, UUID newAdminId): void |
 | 3 | PIN | Criar interface `ListCircleMembersUseCase` | Método: execute(UUID userId, UUID circleId): List\<CircleMemberOutputDto\> |
-| 4 | APP | Implementar `RemoveMemberService` | Validar que solicitante é ADMIN, marcar membro como REMOVED, atualizar left_at |
-| 5 | APP | Implementar `TransferAdminService` | Validar que solicitante é ADMIN, alterar roles |
+| 4 | APP | Implementar `RemoveMemberService` | Validar que solicitante é ADMIN, marcar membro como REMOVED, atualizar left_at, publicar `MEMBER_REMOVED` para todos os demais membros ativos do círculo via `NotificationCommandPublisher` (payload: memberId removido, nome, circleId) |
+| 5 | APP | Implementar `TransferAdminService` | Validar que solicitante é ADMIN, alterar roles (antigo ADMIN → MEMBER, novo ADMIN), publicar `ADMIN_TRANSFERRED` para todos os membros do círculo via `NotificationCommandPublisher` (payload: novo adminId, nome, circleId) |
 | 6 | APP | Implementar `ListCircleMembersService` | Buscar membros ativos do círculo |
 | 7 | API | Adicionar endpoints ao `CircleController` | `DELETE /api/v1/circles/{circleId}/members/{memberId}`, `PUT /api/v1/circles/{circleId}/members/{memberId}/transfer-admin`, `GET /api/v1/circles/{circleId}/members` |
-| 8 | TEST | Testes unitários `RemoveMemberService` | Testar remoção por admin e tentativa por membro comum |
-| 9 | TEST | Testes unitários `TransferAdminService` | Testar transferência e validações de role |
+| 8 | TEST | Testes unitários `RemoveMemberService` | Testar remoção por admin, tentativa por membro comum, e verificar publicação de `MEMBER_REMOVED` para os demais membros |
+| 9 | TEST | Testes unitários `TransferAdminService` | Testar transferência, validações de role, e verificar publicação de `ADMIN_TRANSFERRED` para todos os membros |
 
 ---
 
@@ -221,9 +224,9 @@
 | # | Camada | Tarefa | Detalhes |
 |---|--------|--------|----------|
 | 1 | PIN | Criar interface `LeaveCircleUseCase` | Método: execute(UUID userId, UUID circleId): void |
-| 2 | APP | Implementar `LeaveCircleService` | Verificar se é único admin (impedir saída ou excluir círculo), marcar como REMOVED, parar compartilhamento de localização |
+| 2 | APP | Implementar `LeaveCircleService` | Verificar se é único admin (impedir saída ou excluir círculo), marcar como REMOVED, parar compartilhamento de localização, publicar `MEMBER_LEFT` para todos os membros restantes do círculo via `NotificationCommandPublisher` (payload: userId que saiu, nome, circleId) |
 | 3 | API | Adicionar endpoint ao `CircleController` | `POST /api/v1/circles/{circleId}/leave` |
-| 4 | TEST | Testes unitários `LeaveCircleService` | Testar saída normal e cenário de último admin |
+| 4 | TEST | Testes unitários `LeaveCircleService` | Testar saída normal, cenário de último admin, e verificar publicação de `MEMBER_LEFT` para os membros restantes |
 
 ---
 
@@ -582,7 +585,7 @@
 | # | Camada | Tarefa | Detalhes |
 |---|--------|--------|----------|
 | 1 | DB | Criar migration `notifications` | Tabela `notifications` com campos: id, user_id (FK), circle_id (FK nullable), type (ENUM), title, body, payload (JSON), status (ENUM PENDING/SENT/FAILED), sent_at, created_at |
-| 2 | DOM | Criar entidade `Notification` | Factory methods, enum `NotificationType` (PLACE_EVENT, DRIVE_START, DRIVE_END, DRIVE_RISK, SOS, BATTERY_LOW, INVITE, SYSTEM), enum `NotificationStatus` (PENDING, SENT, FAILED) |
+| 2 | DOM | Criar entidade `Notification` | Factory methods, enum `NotificationType` (PLACE_EVENT, DRIVE_START, DRIVE_END, DRIVE_RISK, SOS, BATTERY_LOW, INVITE, MEMBER_JOINED, MEMBER_LEFT, MEMBER_REMOVED, ADMIN_TRANSFERRED, SYSTEM), enum `NotificationStatus` (PENDING, SENT, FAILED) |
 | 3 | POUT | Criar interface `NotificationRepository` | Métodos: save, findByUserIdOrderByCreatedAtDesc (paginado) |
 | 4 | POUT | Criar interface `PushNotificationSender` | Método: send(deviceToken, title, body, payload) — abstração FCM/APNS |
 | 5 | APP | Implementar `NotificationDispatchService` | Receber evento (geofence, drive, SOS), buscar preferências do usuário, buscar device tokens, enviar push, persistir notificação |

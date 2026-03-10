@@ -106,8 +106,7 @@
   - Código de convite
   - Link de convite
   - Convite explícito enviado para e-mail/telefone.
-- RF-016 – Exigir aceite do convite pelo usuário convidado.
-- RF-017 – Administrador pode aprovar/rejeitar novas entradas se círculo for “privado”.
+- RF-016 – Exigir aceite do convite pelo usuário convidado.- RF-016A – Após o usuário convidado entrar no círculo, notificar todos os demais membros ativos do círculo com uma notificação do tipo `MEMBER_JOINED` contendo o nome do novo membro.- RF-017 – Administrador pode aprovar/rejeitar novas entradas se círculo for “privado”.
 
 ### 5.3 Papéis e Permissões em Círculos
 
@@ -118,10 +117,13 @@
   - Remover membros do círculo.
   - Transferir administração para outro membro.
   - Bloquear novo ingresso de membros (círculo fechado).
+- RF-019A – Após remover um membro, notificar todos os demais membros ativos do círculo com uma notificação do tipo `MEMBER_REMOVED` contendo o nome do membro removido.
+- RF-019B – Após transferir a administração, notificar todos os membros do círculo com uma notificação do tipo `ADMIN_TRANSFERRED` contendo o nome do novo administrador.
 
 ### 5.4 Sair e Excluir Círculo
 
 - RF-020 – Permitir ao usuário sair de um círculo.
+- RF-020A – Após o usuário sair do círculo, notificar todos os membros restantes do círculo com uma notificação do tipo `MEMBER_LEFT` contendo o nome do membro que saiu.
 - RF-021 – Se o único administrador sair:
   - Transferir automaticamente a administração para outro membro ou
   - Notificar antes para que escolha um substituto.
