@@ -235,6 +235,13 @@ O projeto segue regras obrigatórias de observabilidade. Consulte `.github/instr
 - Regras de segurança em logs (dados sensíveis)
 - Checklist de observabilidade por funcionalidade
 
+## Testes e Execução Local
+
+O projeto segue regras obrigatórias para testes, compilação e execução local via Docker. Consulte `.github/instructions/testing.instructions.md` para:
+- Comandos oficiais de teste e compilação com Docker Maven
+- Regra de não utilizar `mvn` local para `test`, `compile` ou `spring-boot:run`
+- Referência obrigatória ao `commands.md` como fonte de verdade
+
 ## Git Commits & Small Releases
 
 O projeto adota **small releases** com **Conventional Commits**. Consulte `.github/instructions/git-commits.instructions.md` para:
