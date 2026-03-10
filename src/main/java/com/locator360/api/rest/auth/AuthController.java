@@ -2,10 +2,14 @@ package com.locator360.api.rest.auth;
 
 import com.locator360.core.port.in.auth.LoginUseCase;
 import com.locator360.core.port.in.auth.LogoutUseCase;
+import com.locator360.core.port.in.auth.ConfirmPasswordResetUseCase;
 import com.locator360.core.port.in.auth.RefreshTokenUseCase;
+import com.locator360.core.port.in.auth.RequestPasswordResetUseCase;
 import com.locator360.core.port.in.auth.RegisterUserUseCase;
+import com.locator360.core.port.in.dto.input.ConfirmPasswordResetInputDto;
 import com.locator360.core.port.in.dto.input.LoginWithEmailInputDto;
 import com.locator360.core.port.in.dto.input.LoginWithPhoneInputDto;
+import com.locator360.core.port.in.dto.input.RequestPasswordResetInputDto;
 import com.locator360.core.port.in.dto.input.RefreshTokenInputDto;
 import com.locator360.core.port.in.dto.input.RegisterWithEmailInputDto;
 import com.locator360.core.port.in.dto.input.RegisterWithPhoneInputDto;
@@ -33,6 +37,8 @@ public class AuthController implements AuthControllerApi {
   private final LoginUseCase loginUseCase;
   private final RefreshTokenUseCase refreshTokenUseCase;
   private final LogoutUseCase logoutUseCase;
+  private final RequestPasswordResetUseCase requestPasswordResetUseCase;
+  private final ConfirmPasswordResetUseCase confirmPasswordResetUseCase;
 
   @Override
   public ResponseEntity<RegisterUserOutputDto> registerWithEmail(
@@ -86,5 +92,23 @@ public class AuthController implements AuthControllerApi {
     logoutUseCase.execute(userId);
     log.info("User logged out: {}", userId);
     return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> requestPasswordReset(
+      @Valid @RequestBody RequestPasswordResetInputDto input) {
+    log.debug("Received password reset request via {}", input.hasEmail() ? "email" : "sms");
+    requestPasswordResetUseCase.execute(input);
+    log.info("Password reset request accepted");
+    return ResponseEntity.accepted().build();
+  }
+
+  @Override
+  public ResponseEntity<Void> confirmPasswordReset(
+      @Valid @RequestBody ConfirmPasswordResetInputDto input) {
+    log.debug("Received password reset confirmation");
+    confirmPasswordResetUseCase.execute(input);
+    log.info("Password reset confirmed successfully");
+    return ResponseEntity.ok().build();
   }
 }

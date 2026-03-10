@@ -27,6 +27,7 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/auth/register/**").permitAll()
             .requestMatchers("/api/v1/auth/login/**").permitAll()
             .requestMatchers("/api/v1/auth/refresh").permitAll()
+            .requestMatchers("/api/v1/auth/password-reset/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
             .anyRequest().authenticated())
