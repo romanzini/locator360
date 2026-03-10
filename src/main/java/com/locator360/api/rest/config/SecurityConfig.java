@@ -30,6 +30,7 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/auth/password-reset/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers("/error").permitAll()
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
