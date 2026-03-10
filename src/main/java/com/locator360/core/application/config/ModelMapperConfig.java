@@ -2,6 +2,7 @@ package com.locator360.core.application.config;
 
 import com.locator360.core.domain.user.User;
 import com.locator360.core.port.in.dto.output.RegisterUserOutputDto;
+import com.locator360.core.port.in.dto.output.UserProfileOutputDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,28 @@ public class ModelMapperConfig {
               .fullName(src.getFullName())
               .firstName(src.getFirstName())
               .lastName(src.getLastName())
+              .preferredLanguage(src.getPreferredLanguage())
+              .timezone(src.getTimezone())
+              .distanceUnit(src.getDistanceUnit() != null ? src.getDistanceUnit().name() : null)
+              .status(src.getStatus() != null ? src.getStatus().name() : null)
+              .createdAt(src.getCreatedAt())
+              .updatedAt(src.getUpdatedAt())
+              .build();
+        });
+
+    modelMapper.createTypeMap(User.class, UserProfileOutputDto.class)
+        .setConverter(ctx -> {
+          User src = ctx.getSource();
+          return UserProfileOutputDto.builder()
+              .id(src.getId())
+              .email(src.getEmail())
+              .phoneNumber(src.getPhoneNumber())
+              .fullName(src.getFullName())
+              .firstName(src.getFirstName())
+              .lastName(src.getLastName())
+              .birthDate(src.getBirthDate())
+              .gender(src.getGender())
+              .profilePhotoUrl(src.getProfilePhotoUrl())
               .preferredLanguage(src.getPreferredLanguage())
               .timezone(src.getTimezone())
               .distanceUnit(src.getDistanceUnit() != null ? src.getDistanceUnit().name() : null)
