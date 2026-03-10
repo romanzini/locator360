@@ -20,7 +20,7 @@
 | US-001 | Cadastro de conta | ✅ Done | (commits iniciais no main) | 2026-03-05 |
 | US-002 | Login e manutenção de sessão | ✅ Done | #3 | 2026-03-09 |
 | US-003 | Recuperação de senha | ✅ Done | #8, #9, #10, #11, #12, #13 | 2026-03-10 |
-| US-004 | Atualizar perfil | ⏳ Pending | — | — |
+| US-004 | Atualizar perfil | ✅ Done | #15, #16, #17, #19, #20 | 2026-03-10 |
 
 ## Épico 2 – Círculos (Grupos Familiares)
 
@@ -128,7 +128,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Total de User Stories | 36 |
-| ✅ Done | 3 |
+| ✅ Done | 4 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 33 |
-| Progresso | 8.3% |
+| ⏳ Pending | 32 |
+| Progresso | 11.1% |
