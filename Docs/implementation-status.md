@@ -26,7 +26,7 @@
 
 | US | Descrição | Status | PR(s) | Data |
 |----|-----------|--------|-------|------|
-| US-010 | Criar círculo | ⏳ Pending | — | — |
+| US-010 | Criar círculo | ✅ Done | #25, #26, #27, #28, #29 | 2026-03-10 |
 | US-011 | Convidar pessoas para o círculo | ⏳ Pending | — | — |
 | US-012 | Entrar em círculo com código/link | ⏳ Pending | — | — |
 | US-013 | Gerenciar membros do círculo | ⏳ Pending | — | — |
@@ -128,7 +128,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Total de User Stories | 36 |
-| ✅ Done | 4 |
+| ✅ Done | 5 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 32 |
-| Progresso | 11.1% |
+| ⏳ Pending | 31 |
+| Progresso | 13.9% |

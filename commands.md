@@ -279,6 +279,41 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   test "-Dsurefire.useFile=false"
 ```
 
+### US-010: criar círculo
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+$circle = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "name": "Família Silva",
+    "description": "Grupo da família",
+    "photoUrl": "https://example.com/family.jpg",
+    "colorHex": "#4CAF50",
+    "privacyLevel": "INVITE_ONLY"
+  }'
+
+$circle | ConvertTo-Json -Depth 5
+```
+
+```powershell
+# Criar círculo com campos mínimos (apenas nome)
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{"name": "Meu Círculo"}'
+```
+
+### US-010: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=CircleTest,CircleMemberTest,CircleSettingsTest,CreateCircleServiceTest,CircleControllerTest" `
+  test "-Dsurefire.useFile=false"
+```
+
 ## 8. Swagger UI
 
 ```
