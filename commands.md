@@ -173,12 +173,54 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/logout" `
 $status
 ```
 
+### US-003: solicitar recuperação de senha por email
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/password-reset/request" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"email":"maria@example.com"}' `
+  -StatusCodeVariable status
+
+$status
+```
+
+### US-003: solicitar recuperação de senha por telefone
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/password-reset/request" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"phoneNumber":"+5511999999999"}' `
+  -StatusCodeVariable status
+
+$status
+```
+
+### US-003: confirmar recuperação de senha
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/password-reset/confirm" `
+  -Method POST -ContentType "application/json" `
+  -Body '{"token":"reset-token-123","newPassword":"NovaSenha123!"}' `
+  -StatusCodeVariable status
+
+$status
+```
+
 ### US-002: rodar testes automatizados do pacote
 
 ```powershell
 docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   maven:3.9.9-eclipse-temurin-17 `
   mvn "-Dtest=AuthControllerTest,LoginServiceTest,RefreshTokenServiceTest,LogoutServiceTest,AuthenticationServiceTest,JwtTokenProviderTest,DeviceTest,DeviceJpaRepositoryAdapterTest" `
+  test "-Dsurefire.useFile=false"
+```
+
+### US-003: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=AuthIdentityTest,RequestPasswordResetServiceTest,ConfirmPasswordResetServiceTest,AuthControllerTest" `
   test "-Dsurefire.useFile=false"
 ```
 
