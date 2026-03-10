@@ -112,6 +112,7 @@ API → Core ← Infrastructure
 	- **REFACTOR**: melhore o código mantendo os testes verdes.
 - **Proibido implementar funcionalidade sem suíte de testes correspondente já criada**.
 - **Escopo padrão**: testes unitários (sem testes de integração), salvo solicitação explícita.
+- **Execução obrigatória via Docker**: para testes, compilação e execução local Java, siga `.github/instructions/testing.instructions.md` e trate `commands.md` como fonte de verdade.
 
 ### Linguagem e Nomenclatura
 - **Inglês**: Nomes de pacotes, classes e métodos
@@ -174,6 +175,8 @@ Implemente testes unitários para:
 - **Application**: Testes de serviços de aplicação
 - **API**: Testes de controllers com dependências mockadas
 - **Infrastructure**: Testes unitários de adapters/repositories com dependências mockadas
+
+Para execução dos testes e compilação Java, consulte `.github/instructions/testing.instructions.md`.
 
 ## 📚 Bibliotecas e Aceleradores
 
