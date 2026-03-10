@@ -114,7 +114,7 @@ git checkout main; git pull origin main
 
 ## 7. Testar os endpoints
 
-### Registro com email
+### US-001: Registro com email
 
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register/email" `
@@ -122,7 +122,7 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register/email" `
   -Body '{"email":"maria@example.com","password":"SenhaForte123!","fullName":"Maria Oliveira"}'
 ```
 
-### Registro com telefone
+### US-001: Registro com telefone
 
 ```powershell
 Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register/phone" `
@@ -224,20 +224,59 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   test "-Dsurefire.useFile=false"
 ```
 
-### Observação sobre `/api/v1/users/me`
-
-```text
-- Sem header Authorization: Bearer <token>, a resposta esperada é 401 Unauthorized.
-- No estado atual do projeto, `/api/v1/users/me` ainda não está implementado no backend.
-- Esse endpoint faz parte do US-004 (Atualizar perfil), que ainda está pendente.
-```
-
-### Exemplo futuro para endpoint autenticado
+### US-004: buscar perfil do usuário autenticado
 
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" `
+# Primeiro faça login para obter o token (veja US-002 acima)
+$profile = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" `
   -Method GET `
   -Headers @{ Authorization = "Bearer $accessToken" }
+
+$profile | ConvertTo-Json -Depth 5
+```
+
+### US-004: atualizar perfil (PATCH parcial)
+
+```powershell
+# Atualizar nome e timezone
+$updatedProfile = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" `
+  -Method PATCH -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{"fullName":"Maria Oliveira Silva","timezone":"America/Sao_Paulo"}'
+
+$updatedProfile | ConvertTo-Json -Depth 5
+```
+
+```powershell
+# Atualizar apenas foto de perfil
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" `
+  -Method PATCH -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{"profilePhotoUrl":"https://example.com/foto.jpg"}'
+```
+
+```powershell
+# Atualizar múltiplos campos
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me" `
+  -Method PATCH -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "fullName": "Maria Oliveira",
+    "birthDate": "1990-05-15",
+    "gender": "female",
+    "preferredLanguage": "pt-BR",
+    "timezone": "America/Sao_Paulo",
+    "distanceUnit": "KILOMETERS"
+  }'
+```
+
+### US-004: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=UserTest,GetUserProfileServiceTest,UpdateUserProfileServiceTest,UserControllerTest" `
+  test "-Dsurefire.useFile=false"
 ```
 
 ## 8. Swagger UI
