@@ -118,6 +118,29 @@ class AuthIdentityTest {
 
       assertNotNull(identity.getLastLoginAt());
     }
+
+    @Test
+    @DisplayName("should update password hash for password identity")
+    void shouldUpdatePasswordHash() {
+      AuthIdentity identity = AuthIdentity.createPassword(UUID.randomUUID(), "maria@example.com", "old_hash");
+
+      identity.updatePassword("new_hash");
+
+      assertEquals("new_hash", identity.getPasswordHash());
+      assertNotNull(identity.getUpdatedAt());
+    }
+
+    @Test
+    @DisplayName("should throw when updating password for non-password provider")
+    void shouldThrowWhenUpdatingPasswordForNonPasswordProvider() {
+      AuthIdentity identity = AuthIdentity.createPhoneSms(UUID.randomUUID(), "+5511999999999");
+
+      IllegalStateException exception = assertThrows(
+          IllegalStateException.class,
+          () -> identity.updatePassword("new_hash"));
+
+      assertEquals("Password can only be updated for PASSWORD provider", exception.getMessage());
+    }
   }
 
   // ─── Factory restore() ──────────────────────────────────────────

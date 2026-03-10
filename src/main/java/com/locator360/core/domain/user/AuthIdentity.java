@@ -104,6 +104,18 @@ public class AuthIdentity {
     this.updatedAt = Instant.now();
   }
 
+  public void updatePassword(String newPasswordHash) {
+    if (this.provider != AuthProvider.PASSWORD) {
+      throw new IllegalStateException("Password can only be updated for PASSWORD provider");
+    }
+    if (newPasswordHash == null || newPasswordHash.isBlank()) {
+      throw new IllegalArgumentException("Password hash is required for password provider");
+    }
+
+    this.passwordHash = newPasswordHash;
+    this.updatedAt = Instant.now();
+  }
+
   // ─── Getters ────────────────────────────────────────────────────
 
   public UUID getId() {
