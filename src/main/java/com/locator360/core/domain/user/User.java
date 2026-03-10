@@ -100,6 +100,45 @@ public class User {
         this.updatedAt = Instant.now();
     }
 
+    public void updateProfile(String fullName, String firstName, String lastName,
+                              LocalDate birthDate, String gender, String profilePhotoUrl,
+                              String preferredLanguage, String timezone, DistanceUnit distanceUnit) {
+        if (fullName != null) {
+            if (fullName.isBlank()) {
+                throw new IllegalArgumentException("Full name cannot be blank");
+            }
+            this.fullName = fullName.trim();
+            String[] nameParts = splitName(this.fullName);
+            this.firstName = nameParts[0];
+            this.lastName = nameParts[1];
+        }
+        if (firstName != null) {
+            this.firstName = firstName;
+        }
+        if (lastName != null) {
+            this.lastName = lastName;
+        }
+        if (birthDate != null) {
+            this.birthDate = birthDate;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
+        if (profilePhotoUrl != null) {
+            this.profilePhotoUrl = profilePhotoUrl;
+        }
+        if (preferredLanguage != null) {
+            this.preferredLanguage = preferredLanguage;
+        }
+        if (timezone != null) {
+            this.timezone = timezone;
+        }
+        if (distanceUnit != null) {
+            this.distanceUnit = distanceUnit;
+        }
+        this.updatedAt = Instant.now();
+    }
+
     // ─── Validations ────────────────────────────────────────────────
 
     private static void validateCreation(String email, String phoneNumber, String fullName) {

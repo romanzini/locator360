@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -200,6 +201,96 @@ class UserTest {
       user.block();
 
       assertThrows(IllegalStateException.class, user::activate);
+    }
+  }
+
+  // ─── updateProfile() ─────────────────────────────────────────────
+
+  @Nested
+  @DisplayName("User.updateProfile()")
+  class UpdateProfileTests {
+
+    @Test
+    @DisplayName("should update all profile fields")
+    void shouldUpdateAllProfileFields() {
+      User user = User.create("maria@example.com", null, "Maria Oliveira");
+      Instant beforeUpdate = user.getUpdatedAt();
+
+      user.updateProfile(
+          "Ana Paula Santos", "Ana Paula", "Santos",
+          LocalDate.of(1995, 3, 20), "F", "http://new-photo.jpg",
+          "en-US", "America/New_York", DistanceUnit.MILES);
+
+      assertEquals("Ana Paula Santos", user.getFullName());
+      assertEquals("Ana Paula", user.getFirstName());
+      assertEquals("Santos", user.getLastName());
+      assertEquals(LocalDate.of(1995, 3, 20), user.getBirthDate());
+      assertEquals("F", user.getGender());
+      assertEquals("http://new-photo.jpg", user.getProfilePhotoUrl());
+      assertEquals("en-US", user.getPreferredLanguage());
+      assertEquals("America/New_York", user.getTimezone());
+      assertEquals(DistanceUnit.MILES, user.getDistanceUnit());
+      assertTrue(user.getUpdatedAt().compareTo(beforeUpdate) >= 0);
+    }
+
+    @Test
+    @DisplayName("should preserve fields when null is passed")
+    void shouldPreserveFieldsWhenNullIsPassed() {
+      User user = User.create("maria@example.com", null, "Maria Oliveira");
+
+      user.updateProfile(null, null, null, null, null, null, null, null, null);
+
+      assertEquals("Maria Oliveira", user.getFullName());
+      assertEquals("Maria", user.getFirstName());
+      assertNull(user.getBirthDate());
+      assertEquals("pt-BR", user.getPreferredLanguage());
+      assertEquals("America/Sao_Paulo", user.getTimezone());
+      assertEquals(DistanceUnit.KM, user.getDistanceUnit());
+    }
+
+    @Test
+    @DisplayName("should update only fullName and recalculate firstName/lastName")
+    void shouldUpdateOnlyFullNameAndRecalculateNames() {
+      User user = User.create("maria@example.com", null, "Maria Oliveira");
+
+      user.updateProfile("João Carlos da Silva", null, null, null, null, null, null, null, null);
+
+      assertEquals("João Carlos da Silva", user.getFullName());
+      assertEquals("João", user.getFirstName());
+      assertEquals("Carlos da Silva", user.getLastName());
+    }
+
+    @Test
+    @DisplayName("should update only firstName and lastName without changing fullName")
+    void shouldUpdateOnlyFirstAndLastName() {
+      User user = User.create("maria@example.com", null, "Maria Oliveira");
+
+      user.updateProfile(null, "Ana", "Santos", null, null, null, null, null, null);
+
+      assertEquals("Maria Oliveira", user.getFullName());
+      assertEquals("Ana", user.getFirstName());
+      assertEquals("Santos", user.getLastName());
+    }
+
+    @Test
+    @DisplayName("should throw when fullName is blank")
+    void shouldThrowWhenFullNameIsBlank() {
+      User user = User.create("maria@example.com", null, "Maria Oliveira");
+
+      assertThrows(IllegalArgumentException.class,
+          () -> user.updateProfile("   ", null, null, null, null, null, null, null, null));
+    }
+
+    @Test
+    @DisplayName("should update single-word fullName correctly")
+    void shouldUpdateSingleWordFullName() {
+      User user = User.create("maria@example.com", null, "Maria Oliveira");
+
+      user.updateProfile("Beyoncé", null, null, null, null, null, null, null, null);
+
+      assertEquals("Beyoncé", user.getFullName());
+      assertEquals("Beyoncé", user.getFirstName());
+      assertNull(user.getLastName());
     }
   }
 }
