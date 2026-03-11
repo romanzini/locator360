@@ -29,7 +29,7 @@
 | US-010 | Criar círculo | ✅ Done | #25, #26, #27, #28, #29 | 2026-03-10 |
 | US-011 | Convidar pessoas para o círculo | ✅ Done | #37 | 2026-03-11 |
 | US-012 | Entrar em círculo com código/link | ✅ Done | #41, #42, #43, #44, #46, #47 | 2026-03-11 |
-| US-013 | Gerenciar membros do círculo | ⏳ Pending | — | — |
+| US-013 | Gerenciar membros do círculo | ✅ Done | #52, #53, #54, #55, #56, #57 | 2026-03-11 |
 | US-014 | Sair de um círculo | ⏳ Pending | — | — |
 
 ## Épico 3 – Localização em Tempo Real
