@@ -45,4 +45,17 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
   }
+
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<Map<String, Object>> handleIllegalStateException(
+      IllegalStateException ex) {
+    log.warn("Business rule violation: {}", ex.getMessage());
+
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("timestamp", Instant.now());
+    body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+    body.put("error", ex.getMessage());
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+  }
 }
