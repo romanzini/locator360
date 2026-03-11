@@ -1,6 +1,6 @@
 # Locator 360 — Comandos de Desenvolvimento
 
-## 1. Subir a infraestrutura (PostgreSQL, Redis, Kafka, Zookeeper)
+## 1. Subir a infraestrutura (PostgreSQL, Redis, Kafka, Zookeeper, Grafana LGTM)
 
 ```powershell
 docker compose -f docker-compose.infra.yml up -d
@@ -16,13 +16,13 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | Select-String "
 
 Resultado esperado (todos healthy):
 
-| Container | Porta |
-|-----------|-------|
-| fl-postgres | 5432 |
-| fl-redis | 6379 |
-| fl-kafka | 9092 |
-| fl-zookeeper | 2181 |
-| fl-kafka-ui | 8090 |
+fl-kafka-ui    Up 15 minutes             0.0.0.0:8090->8080/tcp, [::]:8090->8080/tcp
+fl-kafka       Up 15 minutes (healthy)   0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
+fl-redis       Up 15 minutes (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+fl-otel-lgtm   Up 15 minutes             0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp,
+0.0.0.0:4317-4318->4317-4318/tcp, [::]:4317-4318->4317-4318/tcp, 0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
+fl-zookeeper   Up 15 minutes (healthy)   2181/tcp, 2888/tcp, 3888/tcp
+fl-postgres    Up 15 minutes (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
 
 ## 3. Executar a aplicação Spring Boot (via Docker Maven)
 
@@ -40,6 +40,14 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   -e MANAGEMENT_OTLP_METRICS_ENDPOINT=http://otel-lgtm:4318/v1/metrics `
   -e LOKI_HOST=otel-lgtm `
   maven:3.9.9-eclipse-temurin-17 mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+## 3.1 Acessar o Grafana LGTM (logs, métricas e traces)
+
+```
+http://localhost:3000
+# (admin/admin)
+# Explore → Loki, Tempo, ou Prometheus
 ```
 
 A aplicação estará disponível em `http://localhost:8080` quando aparecer no log:
