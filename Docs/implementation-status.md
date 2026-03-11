@@ -27,8 +27,8 @@
 | US | Descrição | Status | PR(s) | Data |
 |----|-----------|--------|-------|------|
 | US-010 | Criar círculo | ✅ Done | #25, #26, #27, #28, #29 | 2026-03-10 |
-| US-011 | Convidar pessoas para o círculo | ⏳ Pending | — | — |
-| US-012 | Entrar em círculo com código/link | ⏳ Pending | — | — |
+| US-011 | Convidar pessoas para o círculo | ✅ Done | #37 | 2026-03-11 |
+| US-012 | Entrar em círculo com código/link | ✅ Done | #41, #42, #43, #44, #46, #47 | 2026-03-11 |
 | US-013 | Gerenciar membros do círculo | ⏳ Pending | — | — |
 | US-014 | Sair de um círculo | ⏳ Pending | — | — |
 

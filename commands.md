@@ -339,6 +339,18 @@ $invite = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/{circleId
 $invite | ConvertTo-Json -Depth 5
 ```
 
+### US-012: Entrar em círculo com código/link
+
+```powershell
+# Usa o inviteCode retornado pelo US-011 acima
+$member = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/join" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body "{`"inviteCode`":`"$($invite.inviteCode)`"}"
+
+$member | ConvertTo-Json -Depth 5
+```
+
 ## 8. Swagger UI
 
 ```
