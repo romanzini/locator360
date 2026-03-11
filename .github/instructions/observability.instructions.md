@@ -10,10 +10,11 @@ applyTo: '**'
 
 | Pilar | Tecnologia | Propósito |
 |-------|-----------|-----------|
-| **Logging** | SLF4J + Logback | Registro estruturado de eventos |
-| **Metrics** | Micrometer + Prometheus | Métricas de negócio e técnicas |
-| **Tracing** | Micrometer Tracing | Rastreamento distribuído entre serviços |
+| **Logging** | SLF4J + Logback + Loki | Registro estruturado de eventos (console + Loki) |
+| **Metrics** | Micrometer + Prometheus + OTLP | Métricas de negócio e técnicas |
+| **Tracing** | Micrometer Tracing + OpenTelemetry + Tempo | Rastreamento distribuído entre serviços |
 | **Health** | Spring Actuator | Verificação de saúde dos componentes |
+| **Visualização** | Grafana (via `grafana/otel-lgtm`) | Dashboards, exploração de logs/traces/métricas |
 
 ## 📝 Logging — Regras Obrigatórias
 
@@ -248,14 +249,41 @@ public class KafkaHealthIndicator implements HealthIndicator {
 ## 🔗 Tracing Distribuído
 
 ### Configuração
-O Spring Boot 3 com Micrometer Tracing propaga automaticamente `traceId` e `spanId` entre serviços via headers HTTP e Kafka.
+O Spring Boot 3 com Micrometer Tracing + OpenTelemetry propaga automaticamente `traceId` e `spanId` entre serviços via headers HTTP e Kafka.
+
+**Dependências obrigatórias (já configuradas no `pom.xml`):**
+- `micrometer-tracing-bridge-otel` — Bridge Micrometer → OpenTelemetry
+- `opentelemetry-exporter-otlp` — Exporta traces via protocolo OTLP para Tempo
+
+**Configuração OTLP (já configurada no `application.yml`):**
+```yaml
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # 100% em dev
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    metrics:
+      endpoint: http://localhost:4318/v1/metrics
+```
 
 ### Logs Correlacionados
-O `traceId` é automaticamente incluído nos logs via MDC quando configurado:
+O `traceId` e `spanId` são automaticamente incluídos nos logs via MDC. O pattern é definido no `logback-spring.xml`:
+```
+%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [family-locator,traceId,spanId] [thread] logger : message
+```
+
+### Envio de Logs para Loki
+O `logback-spring.xml` configura o appender `loki4j` (ativo apenas no profile `dev`) que envia logs diretamente para Loki com labels `{application, level, logger}`, permitindo correlação com traces no Grafana.
+
+**Dependência:** `com.github.loki4j:loki-logback-appender`
+
+**Configuração do host Loki (via `application-dev.yml`):**
 ```yaml
-logging:
-  pattern:
-    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+loki:
+  host: ${LOKI_HOST:localhost}
+  port: ${LOKI_PORT:3100}
 ```
 
 ### Span Customizado (quando necessário)
@@ -281,12 +309,49 @@ public class GeofenceService {
 ## 📁 Estrutura para Observabilidade
 
 ```text
+src/main/resources/
+├── application.yml            # management.otlp.tracing/metrics endpoints
+├── application-dev.yml        # loki.host, loki.port
+└── logback-spring.xml         # Console + Loki appender (dev profile)
+
 infrastructure/
 └── config/
     └── ObservabilityConfig.java    # Beans de MeterRegistry, ObservationRegistry (se customizações necessárias)
 ```
 
 Não é necessária uma pasta dedicada — as configurações do Actuator e Micrometer são gerenciadas via `application.yml`.
+
+## 🐳 Stack LGTM — Ambiente de Desenvolvimento
+
+O projeto utiliza a imagem `grafana/otel-lgtm` (all-in-one) que empacota:
+- **Grafana** — Dashboards e exploração (porta 3000, login `admin`/`admin`)
+- **Loki** — Agregação de logs (porta 3100)
+- **Tempo** — Armazenamento de traces (recebe via OTLP)
+- **Prometheus** — Scrape de métricas (porta 9090)
+- **OpenTelemetry Collector** — Recebe traces/métricas via OTLP (portas 4317 gRPC, 4318 HTTP)
+
+### Fluxo de dados
+```
+App (Spring Boot)
+  ├─ Logs (loki4j appender) ───────→ Loki ──→ Grafana (Explore/Logs)
+  ├─ Traces (OTLP HTTP) ──────────→ OTel Collector ──→ Tempo ──→ Grafana (Explore/Traces)
+  └─ Metrics (/actuator/prometheus) → Prometheus scrape ──→ Grafana (Explore/Metrics)
+```
+
+### Iniciar a stack
+```bash
+docker compose -f docker-compose.infra.yml up -d
+```
+
+### Acessar o Grafana
+Abra http://localhost:3000 → **Explore** → selecione Loki, Tempo ou Prometheus.
+
+### Queries úteis no Loki
+```logql
+{application="family-locator"}                    # todos os logs
+{application="family-locator", level="ERROR"}     # apenas erros
+{application="family-locator"} |= "userId"        # busca por texto
+```
 
 ## ✅ Checklist de Observabilidade
 

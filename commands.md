@@ -36,6 +36,9 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/family_locator `
   -e SPRING_DATA_REDIS_HOST=redis `
   -e SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092 `
+  -e MANAGEMENT_OTLP_TRACING_ENDPOINT=http://otel-lgtm:4318/v1/traces `
+  -e MANAGEMENT_OTLP_METRICS_ENDPOINT=http://otel-lgtm:4318/v1/metrics `
+  -e LOKI_HOST=otel-lgtm `
   maven:3.9.9-eclipse-temurin-17 mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
 
@@ -135,7 +138,7 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register/phone" `
 ```powershell
 $login = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/login/email" `
   -Method POST -ContentType "application/json" `
-  -Body '{"email":"maria@example.com","password":"SenhaForte123!"}'
+  -Body '{"email":"rodrigo.romanzini@gmail.com","password":"SenhaForte123!"}'
 
 $login | ConvertTo-Json -Depth 5
 $accessToken = $login.accessToken
@@ -326,7 +329,45 @@ http://localhost:8080/swagger-ui.html
 http://localhost:8090
 ```
 
-## 10. Stack completa (infra + app containerizada)
+## 10. Observabilidade — Grafana LGTM
+
+A stack LGTM (Loki + Grafana + Tempo + Prometheus) é provida pelo container `grafana/otel-lgtm`.
+
+| Serviço | URL | Credenciais |
+|---------|-----|-------------|
+| Grafana | <http://localhost:3000> | admin / admin |
+| Prometheus | <http://localhost:9090> | — |
+| OTLP gRPC | localhost:4317 | — |
+| OTLP HTTP | localhost:4318 | — |
+
+### Acessar dashboards no Grafana
+
+1. Abra <http://localhost:3000> (login: `admin` / `admin`)
+2. Vá em **Explore** no menu lateral
+3. Selecione o datasource:
+   - **Loki** — para visualizar logs da aplicação
+   - **Tempo** — para visualizar traces distribuídos
+   - **Prometheus** — para visualizar métricas
+
+### Consultar logs no Loki (Explore)
+
+```logql
+{application="family-locator"}
+{application="family-locator"} |= "error"
+{application="family-locator", level="ERROR"}
+```
+
+### Consultar traces no Tempo (Explore)
+
+Use a busca por **Service Name** = `family-locator` ou cole um `traceId` dos logs.
+
+### Reiniciar apenas o container de observabilidade
+
+```powershell
+docker compose -f docker-compose.infra.yml restart otel-lgtm
+```
+
+## 11. Stack completa (infra + app containerizada)
 
 ```powershell
 docker compose up -d --build

@@ -27,7 +27,7 @@ O **Locator 360** é uma plataforma de monitoramento familiar focada em seguran�
 | Mapeamento | ModelMapper |
 | Utilitários | Lombok |
 | Serialização | Jackson |
-| Observabilidade | Spring Actuator, Micrometer, Logback/SLF4J |
+| Observabilidade | Spring Actuator, Micrometer, OpenTelemetry, Logback/SLF4J, Grafana LGTM (Loki, Tempo, Prometheus) |
 | Testes | JUnit 5, Mockito, Testcontainers, MockMvc |
 | Infraestrutura | Docker, Docker Compose, Kubernetes, Nginx/ALB |
 
