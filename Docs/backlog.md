@@ -671,6 +671,36 @@
 
 ---
 
+### US-102 – Gerenciar planos disponíveis (CRUD Admin)
+
+- Como **administrador da plataforma**, quero **criar, visualizar, atualizar e desativar planos**, para **gerenciar a oferta de planos sem depender de migrations manuais**.
+
+> **Pré-requisito:** US-100 (tabela `plans`, entidade `Plan`, `PlanRepository` e `PlanJpaEntity` já existem).
+> Esta US adiciona apenas os use cases de escrita (Create, Update, Deactivate) e os endpoints admin.
+> A listagem pública (`GET /api/v1/plans`) já é coberta pela US-100.
+
+| # | Camada | Tarefa | Detalhes |
+|---|--------|--------|----------|
+| 1 | POUT | Adicionar métodos ao `PlanRepository` | Métodos: save, existsByCode, deleteById |
+| 2 | PIN | Criar interface `CreatePlanUseCase` | Método: execute(CreatePlanInputDto): PlanOutputDto |
+| 3 | PIN | Criar interface `UpdatePlanUseCase` | Método: execute(UUID planId, UpdatePlanInputDto): PlanOutputDto |
+| 4 | PIN | Criar interface `DeactivatePlanUseCase` | Método: execute(UUID planId): void |
+| 5 | PIN | Criar interface `GetPlanByIdUseCase` | Método: execute(UUID planId): PlanOutputDto |
+| 6 | PIN | Criar `CreatePlanInputDto` | Campos: name, code, description, maxCircles, maxPlacesPerCircle, locationHistoryDays, hasAdvancedDrivingReports, hasIncidentDetection, priceAmount, priceCurrency |
+| 7 | PIN | Criar `UpdatePlanInputDto` | Mesmos campos de `CreatePlanInputDto` (todos opcionais para PATCH parcial) |
+| 8 | APP | Implementar `CreatePlanService` | Validar code único, criar Plan via factory, salvar, retornar DTO |
+| 9 | APP | Implementar `UpdatePlanService` | Buscar plan por ID, atualizar campos, salvar |
+| 10 | APP | Implementar `DeactivatePlanService` | Buscar plan por ID, setar isActive=false, salvar |
+| 11 | APP | Implementar `GetPlanByIdService` | Buscar plan por ID, retornar DTO |
+| 12 | API | Criar interface `AdminPlanControllerApi` | Anotações OpenAPI para `POST /api/v1/admin/plans`, `GET /api/v1/admin/plans/{planId}`, `PATCH /api/v1/admin/plans/{planId}`, `DELETE /api/v1/admin/plans/{planId}` |
+| 13 | API | Implementar `AdminPlanController` | Delega para use cases, protegido por role ADMIN+ |
+| 14 | TEST | Testes unitários `CreatePlanService` | Testar criação, validação de code duplicado |
+| 15 | TEST | Testes unitários `UpdatePlanService` | Testar atualização parcial, plan não encontrado |
+| 16 | TEST | Testes unitários `DeactivatePlanService` | Testar desativação, plan não encontrado |
+| 17 | TEST | Testes unitários `AdminPlanController` | Testar endpoints com MockMvc |
+
+---
+
 ## Épico 12 – Privacidade e Segurança de Dados
 
 ### US-110 – Controlar onde compartilho minha localização
