@@ -1,8 +1,10 @@
 package com.locator360.core.application.config;
 
 import com.locator360.core.domain.circle.Circle;
+import com.locator360.core.domain.circle.CircleInvite;
 import com.locator360.core.domain.user.User;
 import com.locator360.core.port.in.dto.output.CircleOutputDto;
+import com.locator360.core.port.in.dto.output.InviteOutputDto;
 import com.locator360.core.port.in.dto.output.RegisterUserOutputDto;
 import com.locator360.core.port.in.dto.output.UserProfileOutputDto;
 import org.modelmapper.ModelMapper;
@@ -72,6 +74,24 @@ public class ModelMapperConfig {
               .colorHex(src.getColorHex())
               .privacyLevel(src.getPrivacyLevel() != null ? src.getPrivacyLevel().name() : null)
               .createdByUserId(src.getCreatedByUserId())
+              .createdAt(src.getCreatedAt())
+              .updatedAt(src.getUpdatedAt())
+              .build();
+        });
+
+    modelMapper.createTypeMap(CircleInvite.class, InviteOutputDto.class)
+        .setConverter(ctx -> {
+          CircleInvite src = ctx.getSource();
+          return InviteOutputDto.builder()
+              .id(src.getId())
+              .circleId(src.getCircleId())
+              .invitedByUserId(src.getInvitedByUserId())
+              .targetEmail(src.getTargetEmail())
+              .targetPhone(src.getTargetPhone())
+              .inviteCode(src.getInviteCode())
+              .status(src.getStatus() != null ? src.getStatus().name() : null)
+              .acceptedByUserId(src.getAcceptedByUserId())
+              .expiresAt(src.getExpiresAt())
               .createdAt(src.getCreatedAt())
               .updatedAt(src.getUpdatedAt())
               .build();
