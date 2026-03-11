@@ -183,6 +183,26 @@ services:
       - fl-network
 
   # -------------------------------------------------------
+  # Grafana LGTM (Loki + Grafana + Tempo + Prometheus)
+  # All-in-one observability stack for development
+  # -------------------------------------------------------
+  otel-lgtm:
+    image: grafana/otel-lgtm:0.8.1
+    container_name: fl-otel-lgtm
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # Grafana UI
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "9090:9090" # Prometheus
+    volumes:
+      - otel_lgtm_data:/data
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - fl-network
+
+  # -------------------------------------------------------
   # Aplicação Spring Boot (Multi-stage build)
   # -------------------------------------------------------
   app:
@@ -198,6 +218,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      otel-lgtm:
+        condition: service_started
     ports:
       - "${APP_PORT:-8080}:8080"
     environment:
@@ -215,6 +237,10 @@ services:
       APP_JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production-must-be-at-least-256-bits-long!!}
       APP_JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-900000}
       APP_JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
+      # --- Observability (OTLP) ---
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://otel-lgtm:4318/v1/traces
+      MANAGEMENT_OTLP_METRICS_ENDPOINT: http://otel-lgtm:4318/v1/metrics
+      LOKI_HOST: otel-lgtm
       # --- JVM ---
       JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC"
     healthcheck:
@@ -239,6 +265,8 @@ volumes:
   zookeeper_log:
     driver: local
   kafka_data:
+    driver: local
+  otel_lgtm_data:
     driver: local
 
 # -------------------------------------------------------
