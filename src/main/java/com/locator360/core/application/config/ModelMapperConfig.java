@@ -2,7 +2,9 @@ package com.locator360.core.application.config;
 
 import com.locator360.core.domain.circle.Circle;
 import com.locator360.core.domain.circle.CircleInvite;
+import com.locator360.core.domain.circle.CircleMember;
 import com.locator360.core.domain.user.User;
+import com.locator360.core.port.in.dto.output.CircleMemberOutputDto;
 import com.locator360.core.port.in.dto.output.CircleOutputDto;
 import com.locator360.core.port.in.dto.output.InviteOutputDto;
 import com.locator360.core.port.in.dto.output.RegisterUserOutputDto;
@@ -94,6 +96,19 @@ public class ModelMapperConfig {
               .expiresAt(src.getExpiresAt())
               .createdAt(src.getCreatedAt())
               .updatedAt(src.getUpdatedAt())
+              .build();
+        });
+
+    modelMapper.createTypeMap(CircleMember.class, CircleMemberOutputDto.class)
+        .setConverter(ctx -> {
+          CircleMember src = ctx.getSource();
+          return CircleMemberOutputDto.builder()
+              .id(src.getId())
+              .circleId(src.getCircleId())
+              .userId(src.getUserId())
+              .role(src.getRole() != null ? src.getRole().name() : null)
+              .status(src.getStatus() != null ? src.getStatus().name() : null)
+              .joinedAt(src.getJoinedAt())
               .build();
         });
   }
