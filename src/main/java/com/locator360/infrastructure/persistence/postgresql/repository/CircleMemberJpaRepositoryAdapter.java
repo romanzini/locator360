@@ -59,6 +59,14 @@ public class CircleMemberJpaRepositoryAdapter implements CircleMemberRepository 
         return springDataCircleMemberRepository.countByCircleId(circleId);
     }
 
+    @Override
+    public List<CircleMember> findActiveByCircleId(UUID circleId) {
+        log.debug("Finding active circle members for circleId: {}", circleId);
+        return springDataCircleMemberRepository.findByCircleIdAndStatus(circleId, MemberStatus.ACTIVE.name()).stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
     private CircleMember toDomain(CircleMemberJpaEntity entity) {
         return CircleMember.restore(
                 entity.getId(),
