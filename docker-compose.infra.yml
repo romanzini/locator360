@@ -14,6 +14,9 @@
 #   Redis:      localhost:6379
 #   Kafka:      localhost:9092
 #   Kafka UI:   http://localhost:8090
+#   Grafana:    http://localhost:3000
+#   OTLP gRPC:  localhost:4317
+#   OTLP HTTP:  localhost:4318
 # ============================================================
 
 services:
@@ -164,6 +167,26 @@ services:
     networks:
       - fl-network
 
+  # -------------------------------------------------------
+  # Grafana LGTM (Loki + Grafana + Tempo + Prometheus)
+  # All-in-one observability stack for development
+  # -------------------------------------------------------
+  otel-lgtm:
+    image: grafana/otel-lgtm:0.8.1
+    container_name: fl-otel-lgtm
+    restart: unless-stopped
+    ports:
+      - "3000:3000" # Grafana UI
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "9090:9090" # Prometheus
+    volumes:
+      - otel_lgtm_data:/data
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - fl-network
+
 volumes:
   postgres_data:
     driver: local
@@ -174,6 +197,8 @@ volumes:
   zookeeper_log:
     driver: local
   kafka_data:
+    driver: local
+  otel_lgtm_data:
     driver: local
 
 networks:
