@@ -8,3 +8,7 @@ spring:
 logging:
   level:
     com.locator360: DEBUG
+
+loki:
+  host: ${LOKI_HOST:localhost}
+  port: ${LOKI_PORT:3100}

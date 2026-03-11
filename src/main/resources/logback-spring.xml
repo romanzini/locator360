@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="family-locator"/>
+
+    <!-- ===== Console Appender (always active) ===== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [${appName},%X{traceId:-},%X{spanId:-}] [%thread] %-40.40logger{39} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ===== Loki Appender (dev profile only) ===== -->
+    <springProfile name="dev">
+        <springProperty scope="context" name="lokiHost" source="loki.host" defaultValue="localhost"/>
+        <springProperty scope="context" name="lokiPort" source="loki.port" defaultValue="3100"/>
+
+        <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+            <http>
+                <url>http://${lokiHost}:${lokiPort}/loki/api/v1/push</url>
+            </http>
+            <format>
+                <label>
+                    <pattern>application=${appName},level=%level,logger=%logger{20}</pattern>
+                </label>
+                <message>
+                    <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [${appName},%X{traceId:-},%X{spanId:-}] [%thread] %logger{36} : %msg%n</pattern>
+                </message>
+            </format>
+        </appender>
+    </springProfile>
+
+    <!-- ===== Root Logger ===== -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- ===== Attach Loki appender only in dev ===== -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="LOKI"/>
+        </root>
+    </springProfile>
+
+    <!-- ===== Application Logger ===== -->
+    <logger name="com.locator360" level="INFO"/>
+
+    <springProfile name="dev">
+        <logger name="com.locator360" level="DEBUG"/>
+    </springProfile>
+
+</configuration>

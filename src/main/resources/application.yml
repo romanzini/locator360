@@ -45,6 +45,14 @@ management:
   observations:
     key-values:
       application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${MANAGEMENT_OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}
+    metrics:
+      endpoint: ${MANAGEMENT_OTLP_METRICS_ENDPOINT:http://localhost:4318/v1/metrics}
 
 app:
   jwt:
@@ -62,5 +70,3 @@ logging:
   level:
     root: INFO
     com.locator360: INFO
-  pattern:
-    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
