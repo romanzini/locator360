@@ -351,6 +351,41 @@ $member = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/join" `
 $member | ConvertTo-Json -Depth 5
 ```
 
+### US-013: Listar membros do círculo
+
+```powershell
+# Usa circleId retornado pelo US-010
+$members = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/$($circle.id)/members" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+
+$members | ConvertTo-Json -Depth 5
+```
+
+### US-013: Remover membro do círculo (admin only)
+
+```powershell
+# Usa circleId e memberId (id do CircleMember, não userId)
+$memberId = $members[1].id
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/$($circle.id)/members/$memberId" `
+  -Method DELETE `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+$status
+```
+
+### US-013: Transferir administração (admin only)
+
+```powershell
+# Transfere a role de ADMIN para outro membro ativo
+$newAdminMemberId = $members[1].id
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/$($circle.id)/members/$newAdminMemberId/transfer-admin" `
+  -Method PUT `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+$status
+```
+
 ## 8. Swagger UI
 
 ```
