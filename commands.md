@@ -325,6 +325,20 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   test "-Dsurefire.useFile=false"
 ```
 
+### US-011: Convidar pessoas para o círculo
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+$invite = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/{circleId}/invites" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "targetEmail":"juliana.romanzini@gmail.com"
+  }'
+
+$invite | ConvertTo-Json -Depth 5
+```
+
 ## 8. Swagger UI
 
 ```
