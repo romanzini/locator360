@@ -22,6 +22,7 @@
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>2.8.6</springdoc.version>
         <modelmapper.version>3.2.1</modelmapper.version>
+        <loki-logback.version>1.5.2</loki-logback.version>
     </properties>
 
     <dependencies>
@@ -56,6 +57,22 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <!-- Distributed Tracing: Micrometer → OpenTelemetry bridge -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <!-- OTLP exporter: sends traces/metrics to OTel Collector -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+        <!-- Loki Logback appender: sends logs directly to Loki -->
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>${loki-logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
