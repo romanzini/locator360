@@ -6,6 +6,9 @@ import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.circle.CreateCircleUseCase;
 import com.locator360.core.port.in.circle.CreateInviteUseCase;
 import com.locator360.core.port.in.circle.JoinCircleUseCase;
+import com.locator360.core.port.in.circle.ListCircleMembersUseCase;
+import com.locator360.core.port.in.circle.RemoveMemberUseCase;
+import com.locator360.core.port.in.circle.TransferAdminUseCase;
 import com.locator360.core.port.in.dto.input.CreateCircleInputDto;
 import com.locator360.core.port.in.dto.input.CreateInviteInputDto;
 import com.locator360.core.port.in.dto.input.JoinCircleInputDto;
@@ -25,12 +28,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CircleController.class)
@@ -51,6 +58,15 @@ class CircleControllerTest {
 
         @MockitoBean
         private JoinCircleUseCase joinCircleUseCase;
+
+        @MockitoBean
+        private ListCircleMembersUseCase listCircleMembersUseCase;
+
+        @MockitoBean
+        private RemoveMemberUseCase removeMemberUseCase;
+
+        @MockitoBean
+        private TransferAdminUseCase transferAdminUseCase;
 
         @MockitoBean
         private TokenProvider tokenProvider;
@@ -427,6 +443,167 @@ class CircleControllerTest {
                                         .andExpect(status().isUnauthorized());
 
                         verify(joinCircleUseCase, never()).execute(any(), any());
+                }
+        }
+
+        // ─── GET /api/v1/circles/{circleId}/members ─────────────────────────────
+
+        @Nested
+        @DisplayName("GET /api/v1/circles/{circleId}/members")
+        class ListMembersTests {
+
+                private final UUID userId = UUID.randomUUID();
+                private final UUID circleId = UUID.randomUUID();
+                private final String validToken = "valid-jwt-token";
+
+                @Test
+                @DisplayName("should return 200 OK with list of members")
+                void shouldReturn200WithMembers() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+                        CircleMemberOutputDto member1 = CircleMemberOutputDto.builder()
+                                        .id(UUID.randomUUID())
+                                        .circleId(circleId)
+                                        .userId(userId)
+                                        .role("ADMIN")
+                                        .status("ACTIVE")
+                                        .joinedAt(Instant.now())
+                                        .build();
+
+                        CircleMemberOutputDto member2 = CircleMemberOutputDto.builder()
+                                        .id(UUID.randomUUID())
+                                        .circleId(circleId)
+                                        .userId(UUID.randomUUID())
+                                        .role("MEMBER")
+                                        .status("ACTIVE")
+                                        .joinedAt(Instant.now())
+                                        .build();
+
+                        when(listCircleMembersUseCase.execute(eq(userId), eq(circleId)))
+                                        .thenReturn(List.of(member1, member2));
+
+                        mockMvc.perform(get("/api/v1/circles/" + circleId + "/members")
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.length()").value(2))
+                                        .andExpect(jsonPath("$[0].role").value("ADMIN"))
+                                        .andExpect(jsonPath("$[1].role").value("MEMBER"));
+
+                        verify(listCircleMembersUseCase).execute(eq(userId), eq(circleId));
+                }
+
+                @Test
+                @DisplayName("should return 200 OK with empty list")
+                void shouldReturn200WithEmptyList() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        when(listCircleMembersUseCase.execute(eq(userId), eq(circleId)))
+                                        .thenReturn(List.of());
+
+                        mockMvc.perform(get("/api/v1/circles/" + circleId + "/members")
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.length()").value(0));
+                }
+
+                @Test
+                @DisplayName("should return 401 when not authenticated")
+                void shouldReturn401WhenNotAuthenticated() throws Exception {
+                        mockMvc.perform(get("/api/v1/circles/" + circleId + "/members"))
+                                        .andExpect(status().isUnauthorized());
+
+                        verify(listCircleMembersUseCase, never()).execute(any(), any());
+                }
+        }
+
+        // ─── DELETE /api/v1/circles/{circleId}/members/{memberId} ───────────────
+
+        @Nested
+        @DisplayName("DELETE /api/v1/circles/{circleId}/members/{memberId}")
+        class RemoveMemberTests {
+
+                private final UUID userId = UUID.randomUUID();
+                private final UUID circleId = UUID.randomUUID();
+                private final UUID memberId = UUID.randomUUID();
+                private final String validToken = "valid-jwt-token";
+
+                @Test
+                @DisplayName("should return 204 No Content when member is removed")
+                void shouldReturn204WhenMemberRemoved() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        doNothing().when(removeMemberUseCase).execute(eq(userId), eq(circleId), eq(memberId));
+
+                        mockMvc.perform(delete("/api/v1/circles/" + circleId + "/members/" + memberId)
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isNoContent());
+
+                        verify(removeMemberUseCase).execute(eq(userId), eq(circleId), eq(memberId));
+                }
+
+                @Test
+                @DisplayName("should return 422 when requester is not admin")
+                void shouldReturn422WhenNotAdmin() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        doThrow(new IllegalStateException("Only admin members can remove members"))
+                                        .when(removeMemberUseCase).execute(eq(userId), eq(circleId), eq(memberId));
+
+                        mockMvc.perform(delete("/api/v1/circles/" + circleId + "/members/" + memberId)
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isUnprocessableEntity());
+                }
+
+                @Test
+                @DisplayName("should return 401 when not authenticated")
+                void shouldReturn401WhenNotAuthenticated() throws Exception {
+                        mockMvc.perform(delete("/api/v1/circles/" + circleId + "/members/" + memberId))
+                                        .andExpect(status().isUnauthorized());
+
+                        verify(removeMemberUseCase, never()).execute(any(), any(), any());
+                }
+        }
+
+        // ─── PUT /api/v1/circles/{circleId}/members/{memberId}/transfer-admin ───
+
+        @Nested
+        @DisplayName("PUT /api/v1/circles/{circleId}/members/{memberId}/transfer-admin")
+        class TransferAdminTests {
+
+                private final UUID userId = UUID.randomUUID();
+                private final UUID circleId = UUID.randomUUID();
+                private final UUID memberId = UUID.randomUUID();
+                private final String validToken = "valid-jwt-token";
+
+                @Test
+                @DisplayName("should return 204 No Content when admin is transferred")
+                void shouldReturn204WhenAdminTransferred() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        doNothing().when(transferAdminUseCase).execute(eq(userId), eq(circleId), eq(memberId));
+
+                        mockMvc.perform(put("/api/v1/circles/" + circleId + "/members/" + memberId + "/transfer-admin")
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isNoContent());
+
+                        verify(transferAdminUseCase).execute(eq(userId), eq(circleId), eq(memberId));
+                }
+
+                @Test
+                @DisplayName("should return 422 when requester is not admin")
+                void shouldReturn422WhenNotAdmin() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        doThrow(new IllegalStateException("Only admin members can transfer admin role"))
+                                        .when(transferAdminUseCase).execute(eq(userId), eq(circleId), eq(memberId));
+
+                        mockMvc.perform(put("/api/v1/circles/" + circleId + "/members/" + memberId + "/transfer-admin")
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isUnprocessableEntity());
+                }
+
+                @Test
+                @DisplayName("should return 401 when not authenticated")
+                void shouldReturn401WhenNotAuthenticated() throws Exception {
+                        mockMvc.perform(put("/api/v1/circles/" + circleId + "/members/" + memberId + "/transfer-admin"))
+                                        .andExpect(status().isUnauthorized());
+
+                        verify(transferAdminUseCase, never()).execute(any(), any(), any());
                 }
         }
 }

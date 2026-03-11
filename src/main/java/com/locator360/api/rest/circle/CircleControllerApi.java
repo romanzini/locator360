@@ -13,10 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Circles", description = "Gestão de círculos (grupos)")
@@ -52,4 +56,36 @@ public interface CircleControllerApi {
     })
     @PostMapping("/join")
     ResponseEntity<CircleMemberOutputDto> join(@Valid @RequestBody JoinCircleInputDto input);
+
+    @Operation(summary = "Listar membros do círculo", description = "Retorna todos os membros ativos do círculo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de membros retornada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado"),
+            @ApiResponse(responseCode = "422", description = "Usuário não é membro do círculo")
+    })
+    @GetMapping("/{circleId}/members")
+    ResponseEntity<List<CircleMemberOutputDto>> listMembers(
+            @Parameter(description = "ID do círculo") @PathVariable UUID circleId);
+
+    @Operation(summary = "Remover membro do círculo", description = "Remove um membro do círculo (apenas administradores)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Membro removido com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado"),
+            @ApiResponse(responseCode = "422", description = "Solicitante não é admin ou membro não encontrado")
+    })
+    @DeleteMapping("/{circleId}/members/{memberId}")
+    ResponseEntity<Void> removeMember(
+            @Parameter(description = "ID do círculo") @PathVariable UUID circleId,
+            @Parameter(description = "ID do usuário a ser removido") @PathVariable UUID memberId);
+
+    @Operation(summary = "Transferir administração do círculo", description = "Transfere o papel de administrador para outro membro (apenas administradores)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Administração transferida com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado"),
+            @ApiResponse(responseCode = "422", description = "Solicitante não é admin ou membro não encontrado")
+    })
+    @PutMapping("/{circleId}/members/{memberId}/transfer-admin")
+    ResponseEntity<Void> transferAdmin(
+            @Parameter(description = "ID do círculo") @PathVariable UUID circleId,
+            @Parameter(description = "ID do usuário que receberá a administração") @PathVariable UUID memberId);
 }
