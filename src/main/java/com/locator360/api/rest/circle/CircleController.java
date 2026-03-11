@@ -45,7 +45,7 @@ public class CircleController implements CircleControllerApi {
 
     @Override
     public ResponseEntity<InviteOutputDto> createInvite(@PathVariable UUID circleId,
-                                                        @Valid @RequestBody CreateInviteInputDto input) {
+            @Valid @RequestBody CreateInviteInputDto input) {
         UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         log.debug("Received create invite request for circle: {} from user: {}", circleId, userId);
 
