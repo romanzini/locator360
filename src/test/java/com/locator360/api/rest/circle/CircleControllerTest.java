@@ -5,8 +5,11 @@ import com.locator360.api.rest.config.JwtAuthenticationFilter;
 import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.circle.CreateCircleUseCase;
 import com.locator360.core.port.in.circle.CreateInviteUseCase;
+import com.locator360.core.port.in.circle.JoinCircleUseCase;
 import com.locator360.core.port.in.dto.input.CreateCircleInputDto;
 import com.locator360.core.port.in.dto.input.CreateInviteInputDto;
+import com.locator360.core.port.in.dto.input.JoinCircleInputDto;
+import com.locator360.core.port.in.dto.output.CircleMemberOutputDto;
 import com.locator360.core.port.in.dto.output.CircleOutputDto;
 import com.locator360.core.port.in.dto.output.InviteOutputDto;
 import com.locator360.core.port.out.TokenProvider;
@@ -45,6 +48,9 @@ class CircleControllerTest {
 
     @MockitoBean
     private CreateInviteUseCase createInviteUseCase;
+
+    @MockitoBean
+    private JoinCircleUseCase joinCircleUseCase;
 
     @MockitoBean
     private TokenProvider tokenProvider;
@@ -322,6 +328,105 @@ class CircleControllerTest {
                     .andExpect(status().isUnauthorized());
 
             verify(createInviteUseCase, never()).execute(any(), any(), any());
+        }
+    }
+
+    // ─── POST /api/v1/circles/join ──────────────────────────────────────────
+
+    @Nested
+    @DisplayName("POST /api/v1/circles/join")
+    class JoinCircleTests {
+
+        private final UUID userId = UUID.randomUUID();
+        private final UUID circleId = UUID.randomUUID();
+        private final String validToken = "valid-jwt-token";
+
+        @Test
+        @DisplayName("should return 200 OK when join is successful")
+        void shouldReturn200WhenSuccessful() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            CircleMemberOutputDto output = CircleMemberOutputDto.builder()
+                    .id(UUID.randomUUID())
+                    .circleId(circleId)
+                    .userId(userId)
+                    .role("MEMBER")
+                    .status("ACTIVE")
+                    .joinedAt(Instant.now())
+                    .build();
+
+            when(joinCircleUseCase.execute(eq(userId), any(JoinCircleInputDto.class)))
+                    .thenReturn(output);
+
+            String requestBody = """
+                    {
+                        "inviteCode": "ABCD1234"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/join")
+                            .header("Authorization", "Bearer " + validToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.circleId").value(circleId.toString()))
+                    .andExpect(jsonPath("$.role").value("MEMBER"))
+                    .andExpect(jsonPath("$.status").value("ACTIVE"));
+
+            verify(joinCircleUseCase).execute(eq(userId), any(JoinCircleInputDto.class));
+        }
+
+        @Test
+        @DisplayName("should return 400 when inviteCode is missing")
+        void shouldReturn400WhenInviteCodeMissing() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            String requestBody = "{}";
+
+            mockMvc.perform(post("/api/v1/circles/join")
+                            .header("Authorization", "Bearer " + validToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isBadRequest());
+
+            verify(joinCircleUseCase, never()).execute(any(), any());
+        }
+
+        @Test
+        @DisplayName("should return 400 when inviteCode is blank")
+        void shouldReturn400WhenInviteCodeBlank() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            String requestBody = """
+                    {
+                        "inviteCode": "   "
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/join")
+                            .header("Authorization", "Bearer " + validToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isBadRequest());
+
+            verify(joinCircleUseCase, never()).execute(any(), any());
+        }
+
+        @Test
+        @DisplayName("should return 401 when not authenticated")
+        void shouldReturn401WhenNotAuthenticated() throws Exception {
+            String requestBody = """
+                    {
+                        "inviteCode": "ABCD1234"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/join")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isUnauthorized());
+
+            verify(joinCircleUseCase, never()).execute(any(), any());
         }
     }
 }

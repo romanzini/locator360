@@ -2,8 +2,11 @@ package com.locator360.api.rest.circle;
 
 import com.locator360.core.port.in.circle.CreateCircleUseCase;
 import com.locator360.core.port.in.circle.CreateInviteUseCase;
+import com.locator360.core.port.in.circle.JoinCircleUseCase;
 import com.locator360.core.port.in.dto.input.CreateCircleInputDto;
 import com.locator360.core.port.in.dto.input.CreateInviteInputDto;
+import com.locator360.core.port.in.dto.input.JoinCircleInputDto;
+import com.locator360.core.port.in.dto.output.CircleMemberOutputDto;
 import com.locator360.core.port.in.dto.output.CircleOutputDto;
 import com.locator360.core.port.in.dto.output.InviteOutputDto;
 import jakarta.validation.Valid;
@@ -27,6 +30,7 @@ public class CircleController implements CircleControllerApi {
 
     private final CreateCircleUseCase createCircleUseCase;
     private final CreateInviteUseCase createInviteUseCase;
+    private final JoinCircleUseCase joinCircleUseCase;
 
     @Override
     public ResponseEntity<CircleOutputDto> create(@Valid @RequestBody CreateCircleInputDto input) {
@@ -49,5 +53,16 @@ public class CircleController implements CircleControllerApi {
         log.info("Invite created for circle: {} with code: {}", circleId, output.getInviteCode());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(output);
+    }
+
+    @Override
+    public ResponseEntity<CircleMemberOutputDto> join(@Valid @RequestBody JoinCircleInputDto input) {
+        UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.debug("Received join circle request from user: {} with code: {}", userId, input.getInviteCode());
+
+        CircleMemberOutputDto output = joinCircleUseCase.execute(userId, input);
+        log.info("User: {} joined circle: {}", userId, output.getCircleId());
+
+        return ResponseEntity.ok(output);
     }
 }
