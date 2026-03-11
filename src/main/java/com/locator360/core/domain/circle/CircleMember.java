@@ -75,6 +75,17 @@ public class CircleMember {
         this.updatedAt = Instant.now();
     }
 
+    public void demoteToMember() {
+        if (this.role != CircleRole.ADMIN) {
+            throw new IllegalStateException("Only admin members can be demoted");
+        }
+        if (this.status != MemberStatus.ACTIVE) {
+            throw new IllegalStateException("Only active members can be demoted");
+        }
+        this.role = CircleRole.MEMBER;
+        this.updatedAt = Instant.now();
+    }
+
     public boolean isAdmin() {
         return this.role == CircleRole.ADMIN && this.status == MemberStatus.ACTIVE;
     }
