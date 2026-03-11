@@ -4,8 +4,11 @@ import com.locator360.api.rest.config.GlobalExceptionHandler;
 import com.locator360.api.rest.config.JwtAuthenticationFilter;
 import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.circle.CreateCircleUseCase;
+import com.locator360.core.port.in.circle.CreateInviteUseCase;
 import com.locator360.core.port.in.dto.input.CreateCircleInputDto;
+import com.locator360.core.port.in.dto.input.CreateInviteInputDto;
 import com.locator360.core.port.in.dto.output.CircleOutputDto;
+import com.locator360.core.port.in.dto.output.InviteOutputDto;
 import com.locator360.core.port.out.TokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -39,6 +42,9 @@ class CircleControllerTest {
 
     @MockitoBean
     private CreateCircleUseCase createCircleUseCase;
+
+    @MockitoBean
+    private CreateInviteUseCase createInviteUseCase;
 
     @MockitoBean
     private TokenProvider tokenProvider;
@@ -186,6 +192,136 @@ class CircleControllerTest {
                     .andExpect(status().isUnauthorized());
 
             verify(createCircleUseCase, never()).execute(any(), any());
+        }
+    }
+
+    // ─── POST /api/v1/circles/{circleId}/invites ────────────────────
+
+    @Nested
+    @DisplayName("POST /api/v1/circles/{circleId}/invites")
+    class CreateInviteTests {
+
+        private final UUID userId = UUID.randomUUID();
+        private final UUID circleId = UUID.randomUUID();
+        private final String validToken = "valid-jwt-token";
+
+        @Test
+        @DisplayName("should return 201 Created when invite is created successfully")
+        void shouldReturn201WhenSuccessful() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            InviteOutputDto output = InviteOutputDto.builder()
+                    .id(UUID.randomUUID())
+                    .circleId(circleId)
+                    .invitedByUserId(userId)
+                    .targetEmail("test@email.com")
+                    .inviteCode("ABC12345")
+                    .status("PENDING")
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+
+            when(createInviteUseCase.execute(eq(userId), eq(circleId), any(CreateInviteInputDto.class)))
+                    .thenReturn(output);
+
+            String requestBody = """
+                    {
+                        "targetEmail": "test@email.com"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/" + circleId + "/invites")
+                            .header("Authorization", "Bearer " + validToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.circleId").value(circleId.toString()))
+                    .andExpect(jsonPath("$.inviteCode").value("ABC12345"))
+                    .andExpect(jsonPath("$.status").value("PENDING"))
+                    .andExpect(jsonPath("$.targetEmail").value("test@email.com"));
+
+            verify(createInviteUseCase).execute(eq(userId), eq(circleId), any(CreateInviteInputDto.class));
+        }
+
+        @Test
+        @DisplayName("should return 201 with phone number")
+        void shouldReturn201WithPhoneNumber() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            InviteOutputDto output = InviteOutputDto.builder()
+                    .id(UUID.randomUUID())
+                    .circleId(circleId)
+                    .invitedByUserId(userId)
+                    .targetPhone("+5511999999999")
+                    .inviteCode("XYZ78901")
+                    .status("PENDING")
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+
+            when(createInviteUseCase.execute(eq(userId), eq(circleId), any(CreateInviteInputDto.class)))
+                    .thenReturn(output);
+
+            String requestBody = """
+                    {
+                        "targetPhone": "+5511999999999"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/" + circleId + "/invites")
+                            .header("Authorization", "Bearer " + validToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.targetPhone").value("+5511999999999"));
+
+            verify(createInviteUseCase).execute(eq(userId), eq(circleId), any(CreateInviteInputDto.class));
+        }
+
+        @Test
+        @DisplayName("should return 201 with empty body (generic invite)")
+        void shouldReturn201WithEmptyBody() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            InviteOutputDto output = InviteOutputDto.builder()
+                    .id(UUID.randomUUID())
+                    .circleId(circleId)
+                    .inviteCode("GEN12345")
+                    .status("PENDING")
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+
+            when(createInviteUseCase.execute(eq(userId), eq(circleId), any(CreateInviteInputDto.class)))
+                    .thenReturn(output);
+
+            String requestBody = "{}";
+
+            mockMvc.perform(post("/api/v1/circles/" + circleId + "/invites")
+                            .header("Authorization", "Bearer " + validToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.inviteCode").value("GEN12345"));
+
+            verify(createInviteUseCase).execute(eq(userId), eq(circleId), any(CreateInviteInputDto.class));
+        }
+
+        @Test
+        @DisplayName("should return 401 when not authenticated")
+        void shouldReturn401WhenNotAuthenticated() throws Exception {
+            String requestBody = """
+                    {
+                        "targetEmail": "test@email.com"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/" + circleId + "/invites")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestBody))
+                    .andExpect(status().isUnauthorized());
+
+            verify(createInviteUseCase, never()).execute(any(), any(), any());
         }
     }
 }
