@@ -16,4 +16,6 @@ interface SpringDataCircleMemberRepository extends JpaRepository<CircleMemberJpa
     List<CircleMemberJpaEntity> findByUserId(UUID userId);
 
     long countByCircleId(UUID circleId);
+
+    List<CircleMemberJpaEntity> findByCircleIdAndStatus(UUID circleId, String status);
 }

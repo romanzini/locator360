@@ -17,4 +17,6 @@ public interface CircleMemberRepository {
     List<CircleMember> findByUserId(UUID userId);
 
     long countByCircleId(UUID circleId);
+
+    List<CircleMember> findActiveByCircleId(UUID circleId);
 }
