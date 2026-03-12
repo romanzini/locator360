@@ -12,6 +12,8 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT:6379}
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   jpa:
     open-in-view: false
     hibernate:
