@@ -16,8 +16,8 @@ public class CircleMember {
     private Instant updatedAt;
 
     private CircleMember(UUID id, UUID circleId, UUID userId, CircleRole role,
-                         MemberStatus status, Instant joinedAt, Instant leftAt,
-                         Instant createdAt, Instant updatedAt) {
+            MemberStatus status, Instant joinedAt, Instant leftAt,
+            Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.circleId = circleId;
         this.userId = userId;
@@ -50,8 +50,8 @@ public class CircleMember {
     // ─── Factory: reconstituição ────────────────────────────────────
 
     public static CircleMember restore(UUID id, UUID circleId, UUID userId, CircleRole role,
-                                       MemberStatus status, Instant joinedAt, Instant leftAt,
-                                       Instant createdAt, Instant updatedAt) {
+            MemberStatus status, Instant joinedAt, Instant leftAt,
+            Instant createdAt, Instant updatedAt) {
         return new CircleMember(id, circleId, userId, role, status,
                 joinedAt, leftAt, createdAt, updatedAt);
     }
@@ -64,6 +64,17 @@ public class CircleMember {
         }
         this.status = MemberStatus.REMOVED;
         this.leftAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public void rejoin() {
+        if (this.status == MemberStatus.ACTIVE) {
+            throw new IllegalStateException("User is already an active member of this circle");
+        }
+        this.status = MemberStatus.ACTIVE;
+        this.role = CircleRole.MEMBER;
+        this.joinedAt = Instant.now();
+        this.leftAt = null;
         this.updatedAt = Instant.now();
     }
 

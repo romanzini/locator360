@@ -50,11 +50,21 @@ public class JoinCircleService implements JoinCircleUseCase {
         }
 
         UUID circleId = invite.getCircleId();
-        long currentMemberCount = circleMemberRepository.countByCircleId(circleId);
-        circleMembershipService.validateMemberLimit(currentMemberCount);
 
-        CircleMember newMember = CircleMember.createMember(circleId, userId);
-        CircleMember savedMember = circleMemberRepository.save(newMember);
+        CircleMember savedMember = circleMemberRepository.findByCircleIdAndUserId(circleId, userId)
+                .map(existing -> {
+                    if (existing.isActive()) {
+                        throw new IllegalStateException("User is already an active member of this circle");
+                    }
+                    log.debug("Reactivating previous member: {} in circle: {}", userId, circleId);
+                    existing.rejoin();
+                    return circleMemberRepository.save(existing);
+                })
+                .orElseGet(() -> {
+                    long currentMemberCount = circleMemberRepository.countByCircleId(circleId);
+                    circleMembershipService.validateMemberLimit(currentMemberCount);
+                    return circleMemberRepository.save(CircleMember.createMember(circleId, userId));
+                });
 
         invite.accept(userId);
         circleInviteRepository.save(invite);
