@@ -106,4 +106,3 @@ public class CircleController implements CircleControllerApi {
         return ResponseEntity.noContent().build();
     }
 }
-
