@@ -386,6 +386,17 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/$($circle.id)/membe
 $status
 ```
 
+### US-014: Sair de um círculo
+
+```powershell
+# Usa circleId retornado pelo US-010
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/$($circle.id)/leave" `
+  -Method POST `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+$status
+```
+
 ## 8. Swagger UI
 
 ```
