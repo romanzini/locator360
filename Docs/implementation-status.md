@@ -30,7 +30,7 @@
 | US-011 | Convidar pessoas para o círculo | ✅ Done | #37 | 2026-03-11 |
 | US-012 | Entrar em círculo com código/link | ✅ Done | #41, #42, #43, #44, #46, #47 | 2026-03-11 |
 | US-013 | Gerenciar membros do círculo | ✅ Done | #52, #53, #54, #55, #56, #57 | 2026-03-11 |
-| US-014 | Sair de um círculo | ⏳ Pending | — | — |
+| US-014 | Sair de um círculo | ✅ Done | #61, #62, #63 | 2026-03-13 |
 
 ## Épico 3 – Localização em Tempo Real
 
@@ -128,7 +128,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Total de User Stories | 36 |
-| ✅ Done | 5 |
+| ✅ Done | 9 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 31 |
-| Progresso | 13.9% |
+| ⏳ Pending | 27 |
+| Progresso | 25.0% |
