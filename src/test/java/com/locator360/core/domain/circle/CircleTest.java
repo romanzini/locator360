@@ -116,7 +116,7 @@ class CircleTest {
             Instant now = Instant.now();
 
             Circle circle = Circle.restore(id, "Família", "Descrição", "http://photo.jpg",
-                    "#FF6600", PrivacyLevel.INVITE_ONLY, userId, now, now);
+                    "#FF6600", PrivacyLevel.INVITE_ONLY, userId, now, now, null);
 
             assertEquals(id, circle.getId());
             assertEquals("Família", circle.getName());
@@ -127,10 +127,58 @@ class CircleTest {
             assertEquals(userId, circle.getCreatedByUserId());
             assertEquals(now, circle.getCreatedAt());
             assertEquals(now, circle.getUpdatedAt());
+            assertNull(circle.getDeletedAt());
+        }
+
+        @Test
+        @DisplayName("should restore circle with deletedAt")
+        void shouldRestoreCircleWithDeletedAt() {
+            UUID id = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+            Instant now = Instant.now();
+            Instant deletedAt = Instant.now();
+
+            Circle circle = Circle.restore(id, "Família", "Descrição", "http://photo.jpg",
+                    "#FF6600", PrivacyLevel.INVITE_ONLY, userId, now, now, deletedAt);
+
+            assertEquals(deletedAt, circle.getDeletedAt());
+            assertTrue(circle.isDeleted());
         }
     }
 
     // ─── Business methods ───────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Circle.delete()")
+    class DeleteTests {
+
+        @Test
+        @DisplayName("should soft-delete circle")
+        void shouldSoftDeleteCircle() {
+            UUID userId = UUID.randomUUID();
+            Circle circle = Circle.create("Família", null, null, null, null, userId);
+
+            assertFalse(circle.isDeleted());
+            assertNull(circle.getDeletedAt());
+
+            circle.delete();
+
+            assertTrue(circle.isDeleted());
+            assertNotNull(circle.getDeletedAt());
+            assertNotNull(circle.getUpdatedAt());
+        }
+
+        @Test
+        @DisplayName("should throw when deleting already deleted circle")
+        void shouldThrowWhenDeletingAlreadyDeletedCircle() {
+            UUID userId = UUID.randomUUID();
+            Circle circle = Circle.create("Família", null, null, null, null, userId);
+
+            circle.delete();
+
+            assertThrows(IllegalStateException.class, () -> circle.delete());
+        }
+    }
 
     @Nested
     @DisplayName("Circle.update()")

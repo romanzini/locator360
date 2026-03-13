@@ -14,10 +14,11 @@ public class Circle {
     private final UUID createdByUserId;
     private final Instant createdAt;
     private Instant updatedAt;
+    private Instant deletedAt;
 
     private Circle(UUID id, String name, String description, String photoUrl,
                    String colorHex, PrivacyLevel privacyLevel, UUID createdByUserId,
-                   Instant createdAt, Instant updatedAt) {
+                   Instant createdAt, Instant updatedAt, Instant deletedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -27,6 +28,7 @@ public class Circle {
         this.createdByUserId = createdByUserId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 
     // ─── Factory: criação ───────────────────────────────────────────
@@ -39,16 +41,16 @@ public class Circle {
         Instant now = Instant.now();
 
         return new Circle(UUID.randomUUID(), name.trim(), description, photoUrl,
-                colorHex, level, createdByUserId, now, now);
+                colorHex, level, createdByUserId, now, now, null);
     }
 
     // ─── Factory: reconstituição ────────────────────────────────────
 
     public static Circle restore(UUID id, String name, String description, String photoUrl,
                                  String colorHex, PrivacyLevel privacyLevel, UUID createdByUserId,
-                                 Instant createdAt, Instant updatedAt) {
+                                 Instant createdAt, Instant updatedAt, Instant deletedAt) {
         return new Circle(id, name, description, photoUrl, colorHex, privacyLevel,
-                createdByUserId, createdAt, updatedAt);
+                createdByUserId, createdAt, updatedAt, deletedAt);
     }
 
     // ─── Business methods ───────────────────────────────────────────
@@ -74,6 +76,18 @@ public class Circle {
             this.privacyLevel = privacyLevel;
         }
         this.updatedAt = Instant.now();
+    }
+
+    public void delete() {
+        if (this.deletedAt != null) {
+            throw new IllegalStateException("Circle is already deleted");
+        }
+        this.deletedAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 
     // ─── Validations ────────────────────────────────────────────────
@@ -123,5 +137,9 @@ public class Circle {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getDeletedAt() {
+        return deletedAt;
     }
 }

@@ -56,7 +56,8 @@ public class CircleJpaRepositoryAdapter implements CircleRepository {
                 PrivacyLevel.valueOf(entity.getPrivacyLevel()),
                 entity.getCreatedByUserId(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt());
+                entity.getUpdatedAt(),
+                entity.getDeletedAt());
     }
 
     private CircleJpaEntity toJpaEntity(Circle circle) {
@@ -70,6 +71,7 @@ public class CircleJpaRepositoryAdapter implements CircleRepository {
         entity.setCreatedByUserId(circle.getCreatedByUserId());
         entity.setCreatedAt(circle.getCreatedAt());
         entity.setUpdatedAt(circle.getUpdatedAt());
+        entity.setDeletedAt(circle.getDeletedAt());
         return entity;
     }
 }
