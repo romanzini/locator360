@@ -1,11 +1,13 @@
 package com.locator360.core.application.service.circle;
 
+import com.locator360.core.domain.circle.Circle;
 import com.locator360.core.domain.circle.CircleMember;
 import com.locator360.core.domain.circle.CircleRole;
 import com.locator360.core.domain.circle.MemberStatus;
 import com.locator360.core.domain.notification.NotificationCommand;
 import com.locator360.core.domain.notification.NotificationType;
 import com.locator360.core.port.out.CircleMemberRepository;
+import com.locator360.core.port.out.CircleRepository;
 import com.locator360.core.port.out.NotificationCommandPublisher;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -33,6 +35,9 @@ class LeaveCircleServiceTest {
 
     @Mock
     private CircleMemberRepository circleMemberRepository;
+
+    @Mock
+    private CircleRepository circleRepository;
 
     @Mock
     private NotificationCommandPublisher notificationCommandPublisher;
@@ -132,16 +137,23 @@ class LeaveCircleServiceTest {
                     CircleRole.ADMIN, MemberStatus.ACTIVE,
                     Instant.now(), null, Instant.now(), Instant.now());
 
+            Circle circle = Circle.create("Família", null, null, null, null, userId);
+
             when(circleMemberRepository.findByCircleIdAndUserId(circleId, userId))
                     .thenReturn(Optional.of(adminMember));
             when(circleMemberRepository.findActiveByCircleId(circleId))
                     .thenReturn(List.of(adminMember));
             when(circleMemberRepository.save(any())).thenReturn(adminMember);
+            when(circleRepository.findById(circleId)).thenReturn(Optional.of(circle));
+            when(circleRepository.save(any())).thenReturn(circle);
 
             leaveCircleService.execute(userId, circleId);
 
             verify(circleMemberRepository).save(adminMember);
             assertEquals(MemberStatus.REMOVED, adminMember.getStatus());
+            verify(circleRepository).findById(circleId);
+            verify(circleRepository).save(circle);
+            assertTrue(circle.isDeleted());
         }
 
         @Test
@@ -215,11 +227,15 @@ class LeaveCircleServiceTest {
                     CircleRole.ADMIN, MemberStatus.ACTIVE,
                     Instant.now(), null, Instant.now(), Instant.now());
 
+            Circle circle = Circle.create("Família", null, null, null, null, userId);
+
             when(circleMemberRepository.findByCircleIdAndUserId(circleId, userId))
                     .thenReturn(Optional.of(adminMember));
             when(circleMemberRepository.findActiveByCircleId(circleId))
                     .thenReturn(List.of(adminMember));
             when(circleMemberRepository.save(any())).thenReturn(adminMember);
+            when(circleRepository.findById(circleId)).thenReturn(Optional.of(circle));
+            when(circleRepository.save(any())).thenReturn(circle);
 
             leaveCircleService.execute(userId, circleId);
 

@@ -6,6 +6,7 @@ import com.locator360.core.domain.notification.NotificationCommand;
 import com.locator360.core.domain.notification.NotificationType;
 import com.locator360.core.port.in.circle.LeaveCircleUseCase;
 import com.locator360.core.port.out.CircleMemberRepository;
+import com.locator360.core.port.out.CircleRepository;
 import com.locator360.core.port.out.NotificationCommandPublisher;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class LeaveCircleService implements LeaveCircleUseCase {
 
     private final CircleMemberRepository circleMemberRepository;
+    private final CircleRepository circleRepository;
     private final NotificationCommandPublisher notificationCommandPublisher;
     private final MeterRegistry meterRegistry;
 
@@ -52,6 +54,17 @@ public class LeaveCircleService implements LeaveCircleUseCase {
 
         member.remove();
         circleMemberRepository.save(member);
+
+        boolean isLastMember = activeMembers.stream()
+                .noneMatch(m -> !m.getUserId().equals(userId));
+
+        if (isLastMember) {
+            circleRepository.findById(circleId).ifPresent(circle -> {
+                circle.delete();
+                circleRepository.save(circle);
+                log.info("Circle soft-deleted: {}", circleId);
+            });
+        }
 
         publishMemberLeftNotifications(circleId, userId, activeMembers);
 
