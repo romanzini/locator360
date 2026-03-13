@@ -390,11 +390,43 @@ $status
 
 ```powershell
 # Usa circleId retornado pelo US-010
-Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/$($circle.id)/leave" `
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/1385a658-6fd5-4f97-a081-703a27556fef/leave" `
   -Method POST `
   -Headers @{ Authorization = "Bearer $accessToken" } `
   -StatusCodeVariable status
 $status
+```
+
+### US-132: Listar dispositivos do usuário
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+$devices = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me/devices" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+
+$devices | ConvertTo-Json -Depth 5
+```
+
+### US-132: Revogar sessão de dispositivo específico
+
+```powershell
+# Usa o deviceId retornado pelo endpoint de listar dispositivos acima
+$deviceId = $devices[0].id
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/users/me/devices/$deviceId" `
+  -Method DELETE `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+$status
+```
+
+### US-132: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=ListUserDevicesServiceTest,RevokeDeviceServiceTest,UserControllerTest" `
+  test "-Dsurefire.useFile=false"
 ```
 
 ## 8. Swagger UI
