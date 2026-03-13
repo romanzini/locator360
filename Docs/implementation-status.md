@@ -117,7 +117,7 @@
 |----|-----------|--------|-------|------|
 | US-130 | Gerenciar identidades de autenticação | ⏳ Pending | — | — |
 | US-131 | Tokens de verificação e recuperação | ⏳ Pending | — | — |
-| US-132 | Gerenciar dispositivos e revogar sessão | ⏳ Pending | — | — |
+| US-132 | Gerenciar dispositivos e revogar sessão | ✅ Done | #69, #70, #71 | 2026-03-14 |
 | US-135 | Marcações administrativas em contas | ⏳ Pending | — | — |
 | US-136 | Auditar ações do backoffice | ⏳ Pending | — | — |
 
@@ -128,7 +128,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Total de User Stories | 36 |
-| ✅ Done | 9 |
+| ✅ Done | 10 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 27 |
-| Progresso | 25.0% |
+| ⏳ Pending | 26 |
+| Progresso | 27.8% |
