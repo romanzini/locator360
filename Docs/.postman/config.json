@@ -1,0 +1,18 @@
+{
+  "workspace": {
+    "id": "9e89ee28-0642-4a06-a9ef-20d505ac90fc"
+  },
+  "entities": {
+    "environments": [],
+    "flows": [],
+    "globals": [],
+    "mocks": [],
+    "specs": [
+      "..\\openapi.yaml"
+    ],
+    "collections": [
+      "..\\postman-collection-commands-export.json",
+      "..\\postman-collection.json"
+    ]
+  }
+}
