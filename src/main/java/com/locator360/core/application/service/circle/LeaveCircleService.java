@@ -24,65 +24,65 @@ import java.util.UUID;
 @Slf4j
 public class LeaveCircleService implements LeaveCircleUseCase {
 
-    private final CircleMemberRepository circleMemberRepository;
-    private final CircleRepository circleRepository;
-    private final NotificationCommandPublisher notificationCommandPublisher;
-    private final MeterRegistry meterRegistry;
+        private final CircleMemberRepository circleMemberRepository;
+        private final CircleRepository circleRepository;
+        private final NotificationCommandPublisher notificationCommandPublisher;
+        private final MeterRegistry meterRegistry;
 
-    @Override
-    public void execute(UUID userId, UUID circleId) {
-        log.debug("User: {} leaving circle: {}", userId, circleId);
+        @Override
+        public void execute(UUID userId, UUID circleId) {
+                log.debug("User: {} leaving circle: {}", userId, circleId);
 
-        CircleMember member = circleMemberRepository.findByCircleIdAndUserId(circleId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("User is not a member of this circle"));
+                CircleMember member = circleMemberRepository.findByCircleIdAndUserId(circleId, userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User is not a member of this circle"));
 
-        List<CircleMember> activeMembers = circleMemberRepository.findActiveByCircleId(circleId);
+                List<CircleMember> activeMembers = circleMemberRepository.findActiveByCircleId(circleId);
 
-        if (member.isAdmin()) {
-            long adminCount = activeMembers.stream()
-                    .filter(CircleMember::isAdmin)
-                    .count();
+                if (member.isAdmin()) {
+                        long adminCount = activeMembers.stream()
+                                        .filter(CircleMember::isAdmin)
+                                        .count();
 
-            boolean hasOtherMembers = activeMembers.stream()
-                    .anyMatch(m -> !m.getUserId().equals(userId));
+                        boolean hasOtherMembers = activeMembers.stream()
+                                        .anyMatch(m -> !m.getUserId().equals(userId));
 
-            if (adminCount == 1 && hasOtherMembers) {
-                throw new IllegalStateException(
-                        "Cannot leave circle as the only admin. Transfer admin role first");
-            }
+                        if (adminCount == 1 && hasOtherMembers) {
+                                throw new IllegalStateException(
+                                                "Cannot leave circle as the only admin. Transfer admin role first");
+                        }
+                }
+
+                member.remove();
+                circleMemberRepository.save(member);
+
+                boolean isLastMember = activeMembers.stream()
+                                .noneMatch(m -> !m.getUserId().equals(userId));
+
+                if (isLastMember) {
+                        circleRepository.findById(circleId).ifPresent(circle -> {
+                                circle.delete();
+                                circleRepository.save(circle);
+                                log.info("Circle soft-deleted: {}", circleId);
+                        });
+                }
+
+                publishMemberLeftNotifications(circleId, userId, activeMembers);
+
+                meterRegistry.counter("circles.members.left").increment();
+                log.info("User: {} left circle: {}", userId, circleId);
         }
 
-        member.remove();
-        circleMemberRepository.save(member);
-
-        boolean isLastMember = activeMembers.stream()
-                .noneMatch(m -> !m.getUserId().equals(userId));
-
-        if (isLastMember) {
-            circleRepository.findById(circleId).ifPresent(circle -> {
-                circle.delete();
-                circleRepository.save(circle);
-                log.info("Circle soft-deleted: {}", circleId);
-            });
+        private void publishMemberLeftNotifications(UUID circleId, UUID leftUserId,
+                        List<CircleMember> activeMembers) {
+                activeMembers.stream()
+                                .filter(m -> !m.getUserId().equals(leftUserId))
+                                .forEach(member -> {
+                                        NotificationCommand command = NotificationCommand.create(
+                                                        NotificationType.MEMBER_LEFT,
+                                                        member.getUserId(),
+                                                        circleId,
+                                                        Map.of("leftMemberUserId", leftUserId, "circleId", circleId));
+                                        notificationCommandPublisher.publish(command);
+                                });
         }
-
-        publishMemberLeftNotifications(circleId, userId, activeMembers);
-
-        meterRegistry.counter("circles.members.left").increment();
-        log.info("User: {} left circle: {}", userId, circleId);
-    }
-
-    private void publishMemberLeftNotifications(UUID circleId, UUID leftUserId,
-                                                 List<CircleMember> activeMembers) {
-        activeMembers.stream()
-                .filter(m -> !m.getUserId().equals(leftUserId))
-                .forEach(member -> {
-                    NotificationCommand command = NotificationCommand.create(
-                            NotificationType.MEMBER_LEFT,
-                            member.getUserId(),
-                            circleId,
-                            Map.of("leftMemberUserId", leftUserId, "circleId", circleId));
-                    notificationCommandPublisher.publish(command);
-                });
-    }
 }
