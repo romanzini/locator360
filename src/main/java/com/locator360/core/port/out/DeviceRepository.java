@@ -11,6 +11,8 @@ public interface DeviceRepository {
 
   Device save(Device device);
 
+  Optional<Device> findById(UUID id);
+
   Optional<Device> findByUserIdAndPlatform(UUID userId, Platform platform);
 
   List<Device> findByUserId(UUID userId);
