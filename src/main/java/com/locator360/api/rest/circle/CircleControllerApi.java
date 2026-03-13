@@ -88,4 +88,14 @@ public interface CircleControllerApi {
     ResponseEntity<Void> transferAdmin(
             @Parameter(description = "ID do círculo") @PathVariable UUID circleId,
             @Parameter(description = "ID do usuário que receberá a administração") @PathVariable UUID memberId);
+
+    @Operation(summary = "Sair do círculo", description = "O usuário autenticado sai do círculo, parando de compartilhar localização")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Saiu do círculo com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado"),
+            @ApiResponse(responseCode = "422", description = "Único admin com outros membros — transfira a administração antes")
+    })
+    @PostMapping("/{circleId}/leave")
+    ResponseEntity<Void> leave(
+            @Parameter(description = "ID do círculo") @PathVariable UUID circleId);
 }
