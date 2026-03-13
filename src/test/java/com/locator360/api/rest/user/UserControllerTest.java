@@ -4,8 +4,11 @@ import com.locator360.api.rest.config.GlobalExceptionHandler;
 import com.locator360.api.rest.config.JwtAuthenticationFilter;
 import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.dto.input.UpdateUserProfileInputDto;
+import com.locator360.core.port.in.dto.output.DeviceOutputDto;
 import com.locator360.core.port.in.dto.output.UserProfileOutputDto;
 import com.locator360.core.port.in.user.GetUserProfileUseCase;
+import com.locator360.core.port.in.user.ListUserDevicesUseCase;
+import com.locator360.core.port.in.user.RevokeDeviceUseCase;
 import com.locator360.core.port.in.user.UpdateUserProfileUseCase;
 import com.locator360.core.port.out.TokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
@@ -45,6 +49,12 @@ class UserControllerTest {
 
   @MockitoBean
   private UpdateUserProfileUseCase updateUserProfileUseCase;
+
+  @MockitoBean
+  private ListUserDevicesUseCase listUserDevicesUseCase;
+
+  @MockitoBean
+  private RevokeDeviceUseCase revokeDeviceUseCase;
 
   @MockitoBean
   private TokenProvider tokenProvider;
@@ -206,6 +216,107 @@ class UserControllerTest {
               .contentType(MediaType.APPLICATION_JSON)
               .content("{}"))
           .andExpect(status().isUnprocessableEntity());
+    }
+  }
+
+  // ─── GET /api/v1/users/me/devices ─────────────────────────────
+
+  @Nested
+  @DisplayName("GET /api/v1/users/me/devices")
+  class ListDevicesTests {
+
+    @Test
+    @DisplayName("should return 200 with list of devices")
+    void shouldReturn200WithDeviceList() throws Exception {
+      UUID userId = UUID.randomUUID();
+      when(tokenProvider.validateToken("valid-jwt-token")).thenReturn(userId);
+
+      DeviceOutputDto device1 = DeviceOutputDto.builder()
+          .id(UUID.randomUUID())
+          .platform("ANDROID")
+          .deviceModel("Pixel 7")
+          .osVersion("14")
+          .appVersion("1.0.0")
+          .active(true)
+          .lastSeenAt(Instant.parse("2026-03-13T10:00:00Z"))
+          .createdAt(Instant.parse("2026-03-01T10:00:00Z"))
+          .build();
+
+      DeviceOutputDto device2 = DeviceOutputDto.builder()
+          .id(UUID.randomUUID())
+          .platform("IOS")
+          .deviceModel("iPhone 15")
+          .active(false)
+          .build();
+
+      when(listUserDevicesUseCase.execute(userId))
+          .thenReturn(java.util.List.of(device1, device2));
+
+      mockMvc.perform(get("/api/v1/users/me/devices")
+              .header("Authorization", "Bearer valid-jwt-token"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$").isArray())
+          .andExpect(jsonPath("$.length()").value(2))
+          .andExpect(jsonPath("$[0].platform").value("ANDROID"))
+          .andExpect(jsonPath("$[1].platform").value("IOS"));
+    }
+
+    @Test
+    @DisplayName("should return 401 when not authenticated")
+    void shouldReturn401WhenNotAuthenticated() throws Exception {
+      mockMvc.perform(get("/api/v1/users/me/devices"))
+          .andExpect(status().isUnauthorized());
+
+      verify(listUserDevicesUseCase, never()).execute(any());
+    }
+  }
+
+  // ─── DELETE /api/v1/users/me/devices/{deviceId} ───────────────
+
+  @Nested
+  @DisplayName("DELETE /api/v1/users/me/devices/{deviceId}")
+  class RevokeDeviceTests {
+
+    @Test
+    @DisplayName("should return 204 when device revoked successfully")
+    void shouldReturn204WhenDeviceRevoked() throws Exception {
+      UUID userId = UUID.randomUUID();
+      UUID deviceId = UUID.randomUUID();
+      when(tokenProvider.validateToken("valid-jwt-token")).thenReturn(userId);
+
+      doNothing().when(revokeDeviceUseCase).execute(userId, deviceId);
+
+      mockMvc.perform(delete("/api/v1/users/me/devices/" + deviceId)
+              .header("Authorization", "Bearer valid-jwt-token"))
+          .andExpect(status().isNoContent());
+
+      verify(revokeDeviceUseCase).execute(userId, deviceId);
+    }
+
+    @Test
+    @DisplayName("should return 422 when device not found")
+    void shouldReturn422WhenDeviceNotFound() throws Exception {
+      UUID userId = UUID.randomUUID();
+      UUID deviceId = UUID.randomUUID();
+      when(tokenProvider.validateToken("valid-jwt-token")).thenReturn(userId);
+
+      doThrow(new IllegalArgumentException("Device not found"))
+          .when(revokeDeviceUseCase).execute(userId, deviceId);
+
+      mockMvc.perform(delete("/api/v1/users/me/devices/" + deviceId)
+              .header("Authorization", "Bearer valid-jwt-token"))
+          .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @DisplayName("should return 401 when not authenticated")
+    void shouldReturn401WhenNotAuthenticated() throws Exception {
+      UUID deviceId = UUID.randomUUID();
+
+      mockMvc.perform(delete("/api/v1/users/me/devices/" + deviceId))
+          .andExpect(status().isUnauthorized());
+
+      verify(revokeDeviceUseCase, never()).execute(any(), any());
     }
   }
 }
