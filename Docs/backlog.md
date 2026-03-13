@@ -293,6 +293,21 @@
 
 ---
 
+### US-023 – Visualizar status de compartilhamento no mapa
+
+- Como **membro de um círculo**, quero **visualizar no mapa quem está online, desatualizado ou com compartilhamento pausado**, para **entender rapidamente a confiabilidade das posições exibidas**.
+
+> Rastreabilidade: cobre explicitamente o **RF-028** da especificação funcional.
+
+| # | Camada | Tarefa | Detalhes |
+|---|--------|--------|----------|
+| 1 | PIN | Criar `SharingStatus` em DTO de mapa | Valores: `ONLINE`, `STALE`, `PAUSED` |
+| 2 | APP | Atualizar `GetCircleMembersLocationService` | Calcular status visual com base em `lastUpdatedAt` e `LocationSharingState` |
+| 3 | API | Ajustar endpoint de mapa | `GET /api/v1/circles/{circleId}/members/locations` retornando campo `sharingStatus` |
+| 4 | TEST | Testes unitários | Cobrir regras de status online/desatualizado/pausado |
+
+---
+
 ## Épico 4 – Lugares (Geofences) e Alertas de Entrada/Saída
 
 ### US-030 – Cadastrar um lugar (casa, escola, trabalho)
@@ -678,6 +693,7 @@
 > **Pré-requisito:** US-100 (tabela `plans`, entidade `Plan`, `PlanRepository` e `PlanJpaEntity` já existem).
 > Esta US adiciona apenas os use cases de escrita (Create, Update, Deactivate) e os endpoints admin.
 > A listagem pública (`GET /api/v1/plans`) já é coberta pela US-100.
+> Justificativa de escopo: extensão operacional para permitir gestão de catálogo de planos sem depender de novas migrations.
 
 | # | Camada | Tarefa | Detalhes |
 |---|--------|--------|----------|
@@ -769,6 +785,26 @@
 | 4 | APP | Implementar `UnblockUserAdminService` | Alterar status para ACTIVE, criar audit log |
 | 5 | API | Adicionar endpoints ao `AdminController` | `POST /api/v1/admin/users/{userId}/block`, `POST /api/v1/admin/users/{userId}/unblock` |
 | 6 | TEST | Testes unitários dos services | Testar bloqueio, desbloqueio e criação de audit log |
+
+---
+
+### US-122 – Monitoramento e suporte operacional do backoffice
+
+- Como **equipe de suporte/admin**, quero **consultar saúde operacional e executar ações de suporte em conta**, para **resolver incidentes com agilidade e segurança**.
+
+> Rastreabilidade: cobre explicitamente os **RF-097** e **RF-098** da especificação funcional.
+
+| # | Camada | Tarefa | Detalhes |
+|---|--------|--------|----------|
+| 1 | PIN | Criar interface `GetAdminOperationalSummaryUseCase` | Método: execute(): AdminOperationalSummaryOutputDto |
+| 2 | PIN | Criar interface `ForceLogoutUserUseCase` | Método: execute(UUID adminId, UUID userId): void |
+| 3 | PIN | Criar interface `ResetUserTokensUseCase` | Método: execute(UUID adminId, UUID userId): void |
+| 4 | PIN | Criar DTOs de saída | Métricas de erro, desempenho e fila de notificações |
+| 5 | APP | Implementar `GetAdminOperationalSummaryService` | Agregar logs/métricas/fila por portas de leitura |
+| 6 | APP | Implementar `ForceLogoutUserService` | Revogar sessões ativas do usuário + audit log |
+| 7 | APP | Implementar `ResetUserTokensService` | Invalidar tokens e emitir novos desafios de autenticação |
+| 8 | API | Adicionar endpoints ao `AdminController` | `GET /api/v1/admin/operations/summary`, `POST /api/v1/admin/users/{userId}/force-logout`, `POST /api/v1/admin/users/{userId}/reset-tokens` |
+| 9 | TEST | Testes unitários dos services | Cobrir agregação e ações de suporte com trilha de auditoria |
 
 ---
 

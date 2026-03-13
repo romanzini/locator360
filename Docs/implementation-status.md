@@ -39,6 +39,7 @@
 | US-020 | Compartilhar localização com o círculo | ⏳ Pending | — | — |
 | US-021 | Ver membros no mapa | ⏳ Pending | — | — |
 | US-022 | Pausar compartilhamento de localização | ⏳ Pending | — | — |
+| US-023 | Visualizar status de compartilhamento no mapa | ⏳ Pending | — | — |
 
 ## Épico 4 – Lugares (Geofences) e Alertas
 
@@ -96,6 +97,7 @@
 |----|-----------|--------|-------|------|
 | US-100 | Ver plano e benefícios | ⏳ Pending | — | — |
 | US-101 | Assinar plano premium | ⏳ Pending | — | — |
+| US-102 | Gerenciar planos disponíveis (CRUD Admin) | ⏳ Pending | — | — |
 
 ## Épico 12 – Privacidade e Segurança de Dados
 
@@ -110,6 +112,7 @@
 |----|-----------|--------|-------|------|
 | US-120 | Consultar usuário no painel | ⏳ Pending | — | — |
 | US-121 | Bloquear conta por abuso | ⏳ Pending | — | — |
+| US-122 | Monitoramento e suporte operacional | ⏳ Pending | — | — |
 
 ## Histórias Técnicas
 
@@ -118,6 +121,8 @@
 | US-130 | Gerenciar identidades de autenticação | ⏳ Pending | — | — |
 | US-131 | Tokens de verificação e recuperação | ⏳ Pending | — | — |
 | US-132 | Gerenciar dispositivos e revogar sessão | ✅ Done | #69, #70, #71 | 2026-03-14 |
+| US-133 | Configurar políticas de alerta por lugar | ⏳ Pending | — | — |
+| US-134 | Persistir estado de compartilhamento por usuário e círculo | ⏳ Pending | — | — |
 | US-135 | Marcações administrativas em contas | ⏳ Pending | — | — |
 | US-136 | Auditar ações do backoffice | ⏳ Pending | — | — |
 
@@ -127,8 +132,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Total de User Stories | 36 |
+| Total de User Stories | 43 |
 | ✅ Done | 10 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 26 |
-| Progresso | 27.8% |
+| ⏳ Pending | 33 |
+| Progresso | 23.3% |
