@@ -31,6 +31,13 @@ public class DeviceJpaRepositoryAdapter implements DeviceRepository {
   }
 
   @Override
+  public Optional<Device> findById(UUID id) {
+    log.debug("Finding device by id: {}", id);
+    return springDataDeviceRepository.findById(id)
+        .map(entity -> modelMapper.map(entity, Device.class));
+  }
+
+  @Override
   public Optional<Device> findByUserIdAndPlatform(UUID userId, Platform platform) {
     log.debug("Finding device by userId: {} and platform: {}", userId, platform);
     return springDataDeviceRepository
