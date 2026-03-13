@@ -6,6 +6,7 @@ import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.circle.CreateCircleUseCase;
 import com.locator360.core.port.in.circle.CreateInviteUseCase;
 import com.locator360.core.port.in.circle.JoinCircleUseCase;
+import com.locator360.core.port.in.circle.LeaveCircleUseCase;
 import com.locator360.core.port.in.circle.ListCircleMembersUseCase;
 import com.locator360.core.port.in.circle.RemoveMemberUseCase;
 import com.locator360.core.port.in.circle.TransferAdminUseCase;
@@ -61,6 +62,9 @@ class CircleControllerTest {
 
         @MockitoBean
         private ListCircleMembersUseCase listCircleMembersUseCase;
+
+        @MockitoBean
+        private LeaveCircleUseCase leaveCircleUseCase;
 
         @MockitoBean
         private RemoveMemberUseCase removeMemberUseCase;
@@ -604,6 +608,51 @@ class CircleControllerTest {
                                         .andExpect(status().isUnauthorized());
 
                         verify(transferAdminUseCase, never()).execute(any(), any(), any());
+                }
+        }
+
+        // ─── POST /api/v1/circles/{circleId}/leave ──────────────────────────────
+
+        @Nested
+        @DisplayName("POST /api/v1/circles/{circleId}/leave")
+        class LeaveCircleTests {
+
+                private final UUID userId = UUID.randomUUID();
+                private final UUID circleId = UUID.randomUUID();
+                private final String validToken = "valid-jwt-token";
+
+                @Test
+                @DisplayName("should return 204 No Content when user leaves circle")
+                void shouldReturn204WhenUserLeavesCircle() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        doNothing().when(leaveCircleUseCase).execute(eq(userId), eq(circleId));
+
+                        mockMvc.perform(post("/api/v1/circles/" + circleId + "/leave")
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isNoContent());
+
+                        verify(leaveCircleUseCase).execute(eq(userId), eq(circleId));
+                }
+
+                @Test
+                @DisplayName("should return 422 when only admin tries to leave with other members")
+                void shouldReturn422WhenOnlyAdminLeavesWithOtherMembers() throws Exception {
+                        when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+                        doThrow(new IllegalStateException("Cannot leave circle as the only admin. Transfer admin role first"))
+                                        .when(leaveCircleUseCase).execute(eq(userId), eq(circleId));
+
+                        mockMvc.perform(post("/api/v1/circles/" + circleId + "/leave")
+                                        .header("Authorization", "Bearer " + validToken))
+                                        .andExpect(status().isUnprocessableEntity());
+                }
+
+                @Test
+                @DisplayName("should return 401 when not authenticated")
+                void shouldReturn401WhenNotAuthenticated() throws Exception {
+                        mockMvc.perform(post("/api/v1/circles/" + circleId + "/leave"))
+                                        .andExpect(status().isUnauthorized());
+
+                        verify(leaveCircleUseCase, never()).execute(any(), any());
                 }
         }
 }

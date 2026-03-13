@@ -3,6 +3,7 @@ package com.locator360.api.rest.circle;
 import com.locator360.core.port.in.circle.CreateCircleUseCase;
 import com.locator360.core.port.in.circle.CreateInviteUseCase;
 import com.locator360.core.port.in.circle.JoinCircleUseCase;
+import com.locator360.core.port.in.circle.LeaveCircleUseCase;
 import com.locator360.core.port.in.circle.ListCircleMembersUseCase;
 import com.locator360.core.port.in.circle.RemoveMemberUseCase;
 import com.locator360.core.port.in.circle.TransferAdminUseCase;
@@ -36,6 +37,7 @@ public class CircleController implements CircleControllerApi {
     private final CreateInviteUseCase createInviteUseCase;
     private final JoinCircleUseCase joinCircleUseCase;
     private final ListCircleMembersUseCase listCircleMembersUseCase;
+    private final LeaveCircleUseCase leaveCircleUseCase;
     private final RemoveMemberUseCase removeMemberUseCase;
     private final TransferAdminUseCase transferAdminUseCase;
 
@@ -102,6 +104,17 @@ public class CircleController implements CircleControllerApi {
 
         transferAdminUseCase.execute(userId, circleId, memberId);
         log.info("Admin transferred in circle: {} from: {} to: {}", circleId, userId, memberId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> leave(@PathVariable UUID circleId) {
+        UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.debug("Received leave circle request: user={}, circle={}", userId, circleId);
+
+        leaveCircleUseCase.execute(userId, circleId);
+        log.info("User: {} left circle: {}", userId, circleId);
 
         return ResponseEntity.noContent().build();
     }
