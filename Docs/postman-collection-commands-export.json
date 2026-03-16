@@ -683,6 +683,7 @@
           "name": "Get Circle Members Locations",
           "request": {
             "method": "GET",
+            "description": "Returns member locations with sharingStatus field: ONLINE (fresh location), STALE (location older than 5min), PAUSED (sharing paused, no location data).",
             "header": [
               {
                 "key": "Authorization",

@@ -487,6 +487,48 @@ $locations = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLAC
 $locations | ConvertTo-Json -Depth 5
 ```
 
+### US-023: Visualizar status de compartilhamento no mapa
+
+O endpoint `GET /api/v1/circles/{circleId}/members/locations` agora retorna o campo `sharingStatus` com valores: `ONLINE`, `STALE` ou `PAUSED`.
+
+- **ONLINE**: localização recente (menos de 5 minutos)
+- **STALE**: localização desatualizada (mais de 5 minutos)
+- **PAUSED**: compartilhamento pausado (sem dados de localização)
+
+```powershell
+# Obter membros com status de compartilhamento
+$locations = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/members/locations" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+
+# Exemplo de resposta:
+# [
+#   { "userId": "...", "fullName": "John", "sharingStatus": "ONLINE", "latitude": -23.56, ... },
+#   { "userId": "...", "fullName": "Jane", "sharingStatus": "STALE", "latitude": -23.57, ... },
+#   { "userId": "...", "fullName": "Bob",  "sharingStatus": "PAUSED", "latitude": null, ... }
+# ]
+
+$locations | ConvertTo-Json -Depth 5
+```
+
+```powershell
+# Filtrar apenas membros online
+$online = $locations | Where-Object { $_.sharingStatus -eq "ONLINE" }
+$online | ConvertTo-Json -Depth 5
+```
+
+```powershell
+# Filtrar membros com localização desatualizada
+$stale = $locations | Where-Object { $_.sharingStatus -eq "STALE" }
+$stale | ConvertTo-Json -Depth 5
+```
+
+```powershell
+# Filtrar membros com compartilhamento pausado
+$paused = $locations | Where-Object { $_.sharingStatus -eq "PAUSED" }
+$paused | ConvertTo-Json -Depth 5
+```
+
 ### US-022: Pausar compartilhamento de localização
 
 ```powershell
@@ -522,7 +564,7 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE
 $status
 ```
 
-### US-020/021/022: rodar testes automatizados do pacote
+### US-020/021/022/023: rodar testes automatizados do pacote
 
 ```powershell
 docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
