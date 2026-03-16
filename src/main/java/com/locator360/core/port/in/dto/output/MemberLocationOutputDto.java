@@ -20,4 +20,5 @@ public class MemberLocationOutputDto {
     Boolean isMoving;
     Integer batteryLevel;
     Instant lastUpdatedAt;
+    SharingStatus sharingStatus;
 }
