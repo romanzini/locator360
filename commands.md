@@ -472,12 +472,47 @@ $locations = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLAC
 $locations | ConvertTo-Json -Depth 5
 ```
 
-### US-020/021: rodar testes automatizados do pacote
+### US-022: Pausar compartilhamento de localização
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+# Pausar compartilhamento com prazo definido (retorna 202 Accepted)
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/location-sharing/pause" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "pausedUntil": "2026-03-16T23:59:59Z"
+  }' -StatusCodeVariable status
+
+$status
+```
+
+```powershell
+# Pausar compartilhamento por tempo indeterminado (retorna 202 Accepted)
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/location-sharing/pause" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{}' -StatusCodeVariable status
+
+$status
+```
+
+```powershell
+# Retomar compartilhamento (retorna 202 Accepted)
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/location-sharing/resume" `
+  -Method POST `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+
+$status
+```
+
+### US-020/021/022: rodar testes automatizados do pacote
 
 ```powershell
 docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   maven:3.9.9-eclipse-temurin-17 `
-  mvn "-Dtest=LocationTest,LocationSharingStateTest,StreamLocationServiceTest,GetCircleMembersLocationServiceTest,LocationControllerTest" `
+  mvn "-Dtest=LocationTest,LocationSharingStateTest,StreamLocationServiceTest,GetCircleMembersLocationServiceTest,PauseLocationSharingServiceTest,ResumeLocationSharingServiceTest,LocationControllerTest" `
   test "-Dsurefire.useFile=false"
 ```
 
