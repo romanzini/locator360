@@ -678,6 +678,32 @@
               ]
             }
           }
+        },
+        {
+          "name": "Get Circle Members Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/members/locations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "members",
+                "locations"
+              ]
+            }
+          }
         }
       ]
     },
