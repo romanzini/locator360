@@ -238,7 +238,8 @@ git commit -m "<type>(<scope>): <description>"
 
 # 4. Push e criar PR com auto-merge
 git push -u origin HEAD
-gh pr create --base main --head <branch> --title "<type>(<scope>): <description>" --body "<descrição>"
+gh pr create --base main --head <branch> --title "<type>(<scope>): <description>"
+# preencher o checklist obrigatório de review no template da PR
 gh pr merge <branch> --auto --rebase --delete-branch
 
 # 5. Voltar para main e aguardar merge do CI
@@ -264,7 +265,8 @@ O nome da branch segue o mesmo padrão do commit:
 
 ### Regras do PR
 - **Título**: Idêntico à mensagem do commit (`<type>(<scope>): <description>`)
-- **Body**: Breve descrição do que foi feito e por quê (1-3 linhas)
+- **Template obrigatório**: Preencher o checklist em `.github/pull_request_template.md`
+- **Body**: Usar o template para registrar contexto, findings e decisão de review
 - **Base**: Sempre `main`
 - **Merge strategy**: `--rebase` (linear history)
 - **Auto-merge**: Sempre usar `--auto` para merge automático após CI
