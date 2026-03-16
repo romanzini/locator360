@@ -1,8 +1,11 @@
 package com.locator360.api.rest.location;
 
+import com.locator360.core.port.in.dto.input.PauseLocationInputDto;
 import com.locator360.core.port.in.dto.input.StreamLocationInputDto;
 import com.locator360.core.port.in.dto.output.MemberLocationOutputDto;
 import com.locator360.core.port.in.location.GetCircleMembersLocationUseCase;
+import com.locator360.core.port.in.location.PauseLocationSharingUseCase;
+import com.locator360.core.port.in.location.ResumeLocationSharingUseCase;
 import com.locator360.core.port.in.location.StreamLocationUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,8 @@ public class LocationController implements LocationControllerApi {
 
     private final StreamLocationUseCase streamLocationUseCase;
     private final GetCircleMembersLocationUseCase getCircleMembersLocationUseCase;
+    private final PauseLocationSharingUseCase pauseLocationSharingUseCase;
+    private final ResumeLocationSharingUseCase resumeLocationSharingUseCase;
 
     @Override
     public ResponseEntity<Void> stream(@Valid @RequestBody StreamLocationInputDto input) {
@@ -41,5 +46,24 @@ public class LocationController implements LocationControllerApi {
         List<MemberLocationOutputDto> locations = getCircleMembersLocationUseCase.execute(userId, circleId);
         log.info("Returned {} member locations for circle: {}", locations.size(), circleId);
         return ResponseEntity.ok(locations);
+    }
+
+    @Override
+    public ResponseEntity<Void> pauseLocationSharing(@PathVariable UUID circleId,
+            @Valid @RequestBody PauseLocationInputDto input) {
+        UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.debug("Received pause location sharing request from user: {} for circle: {}", userId, circleId);
+        pauseLocationSharingUseCase.execute(userId, circleId, input);
+        log.info("Location sharing paused for user: {} in circle: {}", userId, circleId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    @Override
+    public ResponseEntity<Void> resumeLocationSharing(@PathVariable UUID circleId) {
+        UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.debug("Received resume location sharing request from user: {} for circle: {}", userId, circleId);
+        resumeLocationSharingUseCase.execute(userId, circleId);
+        log.info("Location sharing resumed for user: {} in circle: {}", userId, circleId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }
