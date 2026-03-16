@@ -281,12 +281,16 @@ Escopo desta versão: detecção e monitoramento de direção limitados a viagen
 - RF-052 – Exibir botão de SOS na tela principal.
 - RF-053 – Ao acionar SOS:
   - Mostrar contagem regressiva (ex.: 5 segundos) para cancelar.
-  - Enviar alerta de emergência para todos os membros do círculo selecionado.
+  - Enviar alerta de emergência apenas para os membros configurados para receber SOS (opcional).
 - RF-054 – Alertar via:
   - Push notificação
   - SMS (opcional, dependente de infraestrutura)
   - E-mail (opcional).
 
+  #### Ajustar todas as informações para que esta funcionalidade possa ser implementada, por exemplo
+
+  - Buscar os dados de gerar token e depois buscar as informações para enviar para a URA fazer a ligação para o número de emergência
+  
 ### 10.2 Conteúdo do Alerta de SOS
 
 - RF-055 – Incluir no alerta:
