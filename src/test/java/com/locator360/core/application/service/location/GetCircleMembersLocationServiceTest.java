@@ -238,9 +238,10 @@ class GetCircleMembersLocationServiceTest {
         }
 
         @Test
-        @DisplayName("should skip member without sharing state")
-        void shouldSkipMemberWithoutSharingState() {
+        @DisplayName("should include member without sharing state (default is active)")
+        void shouldIncludeMemberWithoutSharingState() {
             UUID memberUserId = UUID.randomUUID();
+            Instant locationTime = Instant.now();
 
             CircleMember requestingMember = CircleMember.createAdmin(circleId, requestingUserId);
             CircleMember memberNoState = CircleMember.createMember(circleId, memberUserId);
@@ -250,18 +251,49 @@ class GetCircleMembersLocationServiceTest {
             when(circleMemberRepository.findActiveByCircleId(circleId))
                     .thenReturn(List.of(requestingMember, memberNoState));
 
-            // Member has no sharing state
+            // Neither member has a sharing state record
             when(locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId))
                     .thenReturn(Optional.empty());
-
-            // Requesting user has no sharing state either
             when(locationSharingStateRepository.findByUserIdAndCircleId(requestingUserId, circleId))
                     .thenReturn(Optional.empty());
 
+            // Both have cached locations
+            Location memberLocation = Location.restore(
+                    UUID.randomUUID(), memberUserId, circleId,
+                    -23.561414, -46.655881, 10.0, 1.5, 180.0, 760.0,
+                    LocationSource.GPS, locationTime, Instant.now(),
+                    true, 85, Instant.now());
+            when(lastLocationCache.findByUserId(memberUserId))
+                    .thenReturn(Optional.of(memberLocation));
+
+            Location requestingLocation = Location.restore(
+                    UUID.randomUUID(), requestingUserId, circleId,
+                    -23.570000, -46.660000, 5.0, 0.0, 0.0, 750.0,
+                    LocationSource.GPS, locationTime, Instant.now(),
+                    false, 90, Instant.now());
+            when(lastLocationCache.findByUserId(requestingUserId))
+                    .thenReturn(Optional.of(requestingLocation));
+
+            // Both have user records
+            User memberUser = User.restore(
+                    memberUserId, "member@test.com", null, "John Doe",
+                    "John", "Doe", null, null, null,
+                    "pt-BR", "America/Sao_Paulo", null, null, Instant.now(), Instant.now());
+            when(userRepository.findById(memberUserId))
+                    .thenReturn(Optional.of(memberUser));
+
+            User requestingUser = User.restore(
+                    requestingUserId, "requester@test.com", null, "Jane Smith",
+                    "Jane", "Smith", null, null, null,
+                    "pt-BR", "America/Sao_Paulo", null, null, Instant.now(), Instant.now());
+            when(userRepository.findById(requestingUserId))
+                    .thenReturn(Optional.of(requestingUser));
+
             List<MemberLocationOutputDto> result = service.execute(requestingUserId, circleId);
 
-            assertTrue(result.isEmpty());
-            verify(lastLocationCache, never()).findByUserId(memberUserId);
+            assertEquals(2, result.size());
+            verify(lastLocationCache).findByUserId(memberUserId);
+            verify(lastLocationCache).findByUserId(requestingUserId);
         }
 
         @Test

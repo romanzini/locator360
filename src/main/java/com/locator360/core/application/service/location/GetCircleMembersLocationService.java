@@ -52,7 +52,7 @@ public class GetCircleMembersLocationService implements GetCircleMembersLocation
             Optional<LocationSharingState> sharingState =
                     locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId);
 
-            if (sharingState.isEmpty() || !sharingState.get().isSharingActive()) {
+            if (sharingState.isPresent() && !sharingState.get().isSharingActive()) {
                 continue;
             }
 
