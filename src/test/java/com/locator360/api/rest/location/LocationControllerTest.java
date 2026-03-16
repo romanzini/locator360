@@ -4,6 +4,7 @@ import com.locator360.api.rest.config.GlobalExceptionHandler;
 import com.locator360.api.rest.config.JwtAuthenticationFilter;
 import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.dto.output.MemberLocationOutputDto;
+import com.locator360.core.port.in.dto.output.SharingStatus;
 import com.locator360.core.port.in.location.GetCircleMembersLocationUseCase;
 import com.locator360.core.port.in.location.PauseLocationSharingUseCase;
 import com.locator360.core.port.in.location.ResumeLocationSharingUseCase;
@@ -240,6 +241,7 @@ class LocationControllerTest {
                             .isMoving(true)
                             .batteryLevel(85)
                             .lastUpdatedAt(lastUpdated)
+                            .sharingStatus(SharingStatus.ONLINE)
                             .build());
 
             when(getCircleMembersLocationUseCase.execute(userId, circleId))
@@ -256,7 +258,8 @@ class LocationControllerTest {
                     .andExpect(jsonPath("$[0].accuracy").value(10.0))
                     .andExpect(jsonPath("$[0].speed").value(1.5))
                     .andExpect(jsonPath("$[0].isMoving").value(true))
-                    .andExpect(jsonPath("$[0].batteryLevel").value(85));
+                    .andExpect(jsonPath("$[0].batteryLevel").value(85))
+                    .andExpect(jsonPath("$[0].sharingStatus").value("ONLINE"));
 
             verify(getCircleMembersLocationUseCase).execute(userId, circleId);
         }
