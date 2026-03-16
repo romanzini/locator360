@@ -33,6 +33,10 @@
     {
       "key": "deviceId",
       "value": ""
+    },
+    {
+      "key": "placeId",
+      "value": ""
     }
   ],
   "item": [
@@ -796,6 +800,167 @@
                 "{{circleId}}",
                 "location-sharing",
                 "resume"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Places",
+      "item": [
+        {
+          "name": "List Places",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "places"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Place",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.collectionVariables.set('placeId', data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Casa\",\n  \"type\": \"HOME\",\n  \"addressText\": \"Rua Exemplo, 123 - Sao Paulo/SP\",\n  \"latitude\": -23.561414,\n  \"longitude\": -46.655881,\n  \"radiusMeters\": 120.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/places",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "places"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Place",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Place",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Casa Principal\",\n  \"radiusMeters\": 180.0,\n  \"addressText\": \"Rua Exemplo, 456 - Sao Paulo/SP\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Place",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/places/{{placeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "places",
+                "{{placeId}}"
               ]
             }
           }
