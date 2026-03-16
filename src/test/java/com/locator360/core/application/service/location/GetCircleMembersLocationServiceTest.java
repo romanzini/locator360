@@ -6,6 +6,7 @@ import com.locator360.core.domain.location.LocationSharingState;
 import com.locator360.core.domain.location.LocationSource;
 import com.locator360.core.domain.user.User;
 import com.locator360.core.port.in.dto.output.MemberLocationOutputDto;
+import com.locator360.core.port.in.dto.output.SharingStatus;
 import com.locator360.core.port.out.CircleMemberRepository;
 import com.locator360.core.port.out.LastLocationCache;
 import com.locator360.core.port.out.LocationSharingStateRepository;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -44,6 +46,8 @@ class GetCircleMembersLocationServiceTest {
 
     private GetCircleMembersLocationService service;
 
+    private static final Duration STALE_THRESHOLD = Duration.ofMinutes(5);
+
     private UUID requestingUserId;
     private UUID circleId;
 
@@ -53,7 +57,7 @@ class GetCircleMembersLocationServiceTest {
         circleId = UUID.randomUUID();
         service = new GetCircleMembersLocationService(
                 circleMemberRepository, lastLocationCache,
-                locationSharingStateRepository, userRepository);
+                locationSharingStateRepository, userRepository, STALE_THRESHOLD);
     }
 
     @Nested
@@ -157,11 +161,12 @@ class GetCircleMembersLocationServiceTest {
             assertTrue(memberDto.getIsMoving());
             assertEquals(85, memberDto.getBatteryLevel());
             assertEquals(locationTime, memberDto.getLastUpdatedAt());
+            assertEquals(SharingStatus.ONLINE, memberDto.getSharingStatus());
         }
 
         @Test
-        @DisplayName("should skip member with paused sharing")
-        void shouldSkipMemberWithPausedSharing() {
+        @DisplayName("should include paused member with PAUSED status and user info only")
+        void shouldIncludePausedMemberWithPausedStatus() {
             UUID memberUserId = UUID.randomUUID();
 
             CircleMember requestingMember = CircleMember.createAdmin(circleId, requestingUserId);
@@ -177,6 +182,14 @@ class GetCircleMembersLocationServiceTest {
             pausedState.pause(Instant.now().plus(1, ChronoUnit.HOURS));
             when(locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId))
                     .thenReturn(Optional.of(pausedState));
+
+            // Paused member user info
+            User pausedUser = User.restore(
+                    memberUserId, "paused@test.com", null, "Paused User",
+                    "Paused", "User", null, null, null,
+                    "pt-BR", "America/Sao_Paulo", null, null, Instant.now(), Instant.now());
+            when(userRepository.findById(memberUserId))
+                    .thenReturn(Optional.of(pausedUser));
 
             // Requesting user is sharing
             LocationSharingState requestingState = LocationSharingState.create(requestingUserId, circleId);
@@ -200,8 +213,21 @@ class GetCircleMembersLocationServiceTest {
 
             List<MemberLocationOutputDto> result = service.execute(requestingUserId, circleId);
 
-            assertEquals(1, result.size());
-            assertEquals(requestingUserId, result.get(0).getUserId());
+            assertEquals(2, result.size());
+
+            MemberLocationOutputDto pausedDto = result.stream()
+                    .filter(dto -> dto.getUserId().equals(memberUserId))
+                    .findFirst().orElseThrow();
+
+            assertEquals(SharingStatus.PAUSED, pausedDto.getSharingStatus());
+            assertEquals("Paused User", pausedDto.getFullName());
+            assertNull(pausedDto.getLatitude());
+            assertNull(pausedDto.getLongitude());
+            assertNull(pausedDto.getAccuracy());
+            assertNull(pausedDto.getSpeed());
+            assertNull(pausedDto.getIsMoving());
+            assertNull(pausedDto.getBatteryLevel());
+            assertNull(pausedDto.getLastUpdatedAt());
             verify(lastLocationCache, never()).findByUserId(memberUserId);
         }
 
@@ -292,8 +318,87 @@ class GetCircleMembersLocationServiceTest {
             List<MemberLocationOutputDto> result = service.execute(requestingUserId, circleId);
 
             assertEquals(2, result.size());
+            assertEquals(SharingStatus.ONLINE, result.get(0).getSharingStatus());
+            assertEquals(SharingStatus.ONLINE, result.get(1).getSharingStatus());
             verify(lastLocationCache).findByUserId(memberUserId);
             verify(lastLocationCache).findByUserId(requestingUserId);
+        }
+
+        @Test
+        @DisplayName("should return STALE status when location is older than threshold")
+        void shouldReturnStaleStatusWhenLocationIsOld() {
+            UUID memberUserId = UUID.randomUUID();
+            Instant staleTime = Instant.now().minus(10, ChronoUnit.MINUTES);
+
+            CircleMember requestingMember = CircleMember.createAdmin(circleId, requestingUserId);
+            CircleMember staleMember = CircleMember.createMember(circleId, memberUserId);
+
+            when(circleMemberRepository.findByCircleIdAndUserId(circleId, requestingUserId))
+                    .thenReturn(Optional.of(requestingMember));
+            when(circleMemberRepository.findActiveByCircleId(circleId))
+                    .thenReturn(List.of(staleMember));
+
+            when(locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId))
+                    .thenReturn(Optional.empty());
+
+            Location staleLocation = Location.restore(
+                    UUID.randomUUID(), memberUserId, circleId,
+                    -23.561414, -46.655881, 10.0, 0.0, 0.0, 760.0,
+                    LocationSource.GPS, staleTime, Instant.now(),
+                    false, 50, Instant.now());
+            when(lastLocationCache.findByUserId(memberUserId))
+                    .thenReturn(Optional.of(staleLocation));
+
+            User memberUser = User.restore(
+                    memberUserId, "stale@test.com", null, "Stale User",
+                    "Stale", "User", null, null, null,
+                    "pt-BR", "America/Sao_Paulo", null, null, Instant.now(), Instant.now());
+            when(userRepository.findById(memberUserId))
+                    .thenReturn(Optional.of(memberUser));
+
+            List<MemberLocationOutputDto> result = service.execute(requestingUserId, circleId);
+
+            assertEquals(1, result.size());
+            assertEquals(SharingStatus.STALE, result.get(0).getSharingStatus());
+            assertEquals(-23.561414, result.get(0).getLatitude());
+        }
+
+        @Test
+        @DisplayName("should return ONLINE status when location is within threshold")
+        void shouldReturnOnlineStatusWhenLocationIsRecent() {
+            UUID memberUserId = UUID.randomUUID();
+            Instant recentTime = Instant.now().minus(2, ChronoUnit.MINUTES);
+
+            CircleMember requestingMember = CircleMember.createAdmin(circleId, requestingUserId);
+            CircleMember member = CircleMember.createMember(circleId, memberUserId);
+
+            when(circleMemberRepository.findByCircleIdAndUserId(circleId, requestingUserId))
+                    .thenReturn(Optional.of(requestingMember));
+            when(circleMemberRepository.findActiveByCircleId(circleId))
+                    .thenReturn(List.of(member));
+
+            when(locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId))
+                    .thenReturn(Optional.empty());
+
+            Location recentLocation = Location.restore(
+                    UUID.randomUUID(), memberUserId, circleId,
+                    -23.561414, -46.655881, 10.0, 1.5, 180.0, 760.0,
+                    LocationSource.GPS, recentTime, Instant.now(),
+                    true, 85, Instant.now());
+            when(lastLocationCache.findByUserId(memberUserId))
+                    .thenReturn(Optional.of(recentLocation));
+
+            User memberUser = User.restore(
+                    memberUserId, "recent@test.com", null, "Recent User",
+                    "Recent", "User", null, null, null,
+                    "pt-BR", "America/Sao_Paulo", null, null, Instant.now(), Instant.now());
+            when(userRepository.findById(memberUserId))
+                    .thenReturn(Optional.of(memberUser));
+
+            List<MemberLocationOutputDto> result = service.execute(requestingUserId, circleId);
+
+            assertEquals(1, result.size());
+            assertEquals(SharingStatus.ONLINE, result.get(0).getSharingStatus());
         }
 
         @Test
