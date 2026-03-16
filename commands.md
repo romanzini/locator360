@@ -573,6 +573,83 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   test "-Dsurefire.useFile=false"
 ```
 
+### US-030: listar lugares do círculo
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+$places = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/places" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+
+$places | ConvertTo-Json -Depth 5
+```
+
+### US-030: criar lugar (geofence)
+
+```powershell
+$place = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/places" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "name": "Casa",
+    "type": "HOME",
+    "addressText": "Rua Exemplo, 123 - Sao Paulo/SP",
+    "latitude": -23.561414,
+    "longitude": -46.655881,
+    "radiusMeters": 120.0
+  }'
+
+$place | ConvertTo-Json -Depth 5
+$placeId = $place.id
+```
+
+### US-030: obter detalhes de um lugar
+
+```powershell
+# Usa placeId retornado no create acima
+$placeDetails = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/places/$placeId" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+
+$placeDetails | ConvertTo-Json -Depth 5
+```
+
+### US-030: atualizar lugar
+
+```powershell
+# Atualização parcial (PATCH)
+$updatedPlace = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/places/$placeId" `
+  -Method PATCH -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "name": "Casa Principal",
+    "radiusMeters": 180.0,
+    "addressText": "Rua Exemplo, 456 - Sao Paulo/SP"
+  }'
+
+$updatedPlace | ConvertTo-Json -Depth 5
+```
+
+### US-030: excluir lugar (soft delete)
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/places/$placeId" `
+  -Method DELETE `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -StatusCodeVariable status
+
+$status
+```
+
+### US-030: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=PlaceTest,PlaceAlertPolicyTest,PlaceAlertTargetTest,CreatePlaceServiceTest,UpdatePlaceServiceTest,DeletePlaceServiceTest,ListPlacesServiceTest,GetPlaceServiceTest,PlaceControllerTest" `
+  test "-Dsurefire.useFile=false"
+```
+
 ### US-132: Listar dispositivos do usuário
 
 ```powershell
