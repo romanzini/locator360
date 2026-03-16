@@ -39,7 +39,7 @@
 | US-020 | Compartilhar localização com o círculo | ✅ Done | #77-#86 | 2026-03-16 |
 | US-021 | Ver membros no mapa | ✅ Done | #91, #92, #93 | 2026-03-16 |
 | US-022 | Pausar compartilhamento de localização | ✅ Done | #97 | 2026-03-16 |
-| US-023 | Visualizar status de compartilhamento no mapa | ⏳ Pending | — | — |
+| US-023 | Visualizar status de compartilhamento no mapa | ✅ Done | #103, #104, #105 | 2026-03-16 |
 
 ## Épico 4 – Lugares (Geofences) e Alertas
 
@@ -133,7 +133,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Total de User Stories | 43 |
-| ✅ Done | 13 |
+| ✅ Done | 14 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 30 |
-| Progresso | 30.2% |
+| ⏳ Pending | 29 |
+| Progresso | 32.6% |
