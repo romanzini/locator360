@@ -89,8 +89,11 @@ git commit -m "<type>(<scope>): <description>"
 # 3. Push e criar PR com auto-merge
 git push -u origin HEAD
 gh pr create --base main --head (git branch --show-current) `
-  --title "<type>(<scope>): <description>" `
-  --body "<descrição do PR>"
+  --title "<type>(<scope>): <description>"
+
+# 3.1 Preencher o checklist obrigatório de code review
+# Template oficial: .github/pull_request_template.md
+
 gh pr merge (git branch --show-current) --auto --rebase --delete-branch
 
 # 4. Voltar para main e aguardar merge

@@ -119,6 +119,7 @@ Antes de considerar a US finalizada:
 - [ ] **Validação de código** — linters, code quality, imports não utilizados
 - [ ] **Testes** — todos os testes da US passando no CI
 - [ ] **Vulnerabilidades** — sem secrets no código, sem dependências vulneráveis conhecidas
+- [ ] **PR Checklist obrigatório** — preencher `.github/pull_request_template.md` com findings e decisão de review
 
 ---
 
@@ -307,8 +308,10 @@ git commit -m "<type>(<scope>): <description>"
 # 4. Push + criar PR
 git push -u origin HEAD
 gh pr create --base main --head (git branch --show-current) `
-  --title "<type>(<scope>): <description>" `
-  --body "<descrição breve>"
+    --title "<type>(<scope>): <description>"
+
+# 4.1 Preencher checklist obrigatório de review no corpo da PR
+# (template carregado automaticamente de .github/pull_request_template.md)
 
 # 5. Aguardar CI e fazer merge
 gh pr checks <número> --watch
@@ -344,6 +347,7 @@ Antes de cada commit:
 - [ ] Output DTO com converter registrado em `ModelMapperConfig`
 - [ ] Sem código comentado ou imports não utilizados
 - [ ] Mensagem de commit no formato `<type>(<scope>): <description>`
+- [ ] PR com checklist de review preenchido (`.github/pull_request_template.md`)
 
 ---
 
