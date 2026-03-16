@@ -397,6 +397,75 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/1385a658-6fd5-4f97-
 $status
 ```
 
+### US-020: Compartilhar localização com o círculo
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+# Enviar lote de eventos de localização (retorna 202 Accepted)
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/locations/stream" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "circleId": "REPLACE_WITH_CIRCLE_ID",
+    "events": [
+      {
+        "latitude": -23.561414,
+        "longitude": -46.655881,
+        "accuracyMeters": 10.5,
+        "speedMps": 0,
+        "headingDegrees": 180,
+        "altitudeMeters": 760,
+        "source": "GPS",
+        "recordedAt": "2026-03-16T13:44:30Z",
+        "isMoving": false,
+        "batteryLevel": 72
+      },
+      {
+        "latitude": -23.561500,
+        "longitude": -46.655900,
+        "accuracyMeters": 11.0,
+        "speedMps": 1.2,
+        "headingDegrees": 182,
+        "altitudeMeters": 761,
+        "source": "GPS",
+        "recordedAt": "2026-03-16T13:44:45Z",
+        "isMoving": true,
+        "batteryLevel": 72
+      }
+    ]
+  }' -StatusCodeVariable status
+
+$status
+```
+
+```powershell
+# Enviar eventos sem circleId (contexto geral)
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/locations/stream" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body '{
+    "events": [
+      {
+        "latitude": -23.561414,
+        "longitude": -46.655881,
+        "source": "FUSED",
+        "recordedAt": "2026-03-16T14:00:00Z"
+      }
+    ]
+  }' -StatusCodeVariable status
+
+$status
+```
+
+### US-020: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=LocationTest,LocationSharingStateTest,StreamLocationServiceTest,LocationControllerTest" `
+  test "-Dsurefire.useFile=false"
+```
+
 ### US-132: Listar dispositivos do usuário
 
 ```powershell
