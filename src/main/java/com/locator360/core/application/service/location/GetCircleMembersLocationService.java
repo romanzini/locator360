@@ -54,8 +54,8 @@ public class GetCircleMembersLocationService implements GetCircleMembersLocation
         for (CircleMember member : activeMembers) {
             UUID memberUserId = member.getUserId();
 
-            Optional<LocationSharingState> sharingState =
-                    locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId);
+            Optional<LocationSharingState> sharingState = locationSharingStateRepository
+                    .findByUserIdAndCircleId(memberUserId, circleId);
 
             boolean isPaused = sharingState.isPresent() && !sharingState.get().isSharingActive();
 
