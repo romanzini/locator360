@@ -36,7 +36,7 @@
 
 | US | Descrição | Status | PR(s) | Data |
 |----|-----------|--------|-------|------|
-| US-020 | Compartilhar localização com o círculo | ⏳ Pending | — | — |
+| US-020 | Compartilhar localização com o círculo | ✅ Done | #77-#86 | 2026-03-16 |
 | US-021 | Ver membros no mapa | ⏳ Pending | — | — |
 | US-022 | Pausar compartilhamento de localização | ⏳ Pending | — | — |
 | US-023 | Visualizar status de compartilhamento no mapa | ⏳ Pending | — | — |
@@ -133,7 +133,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Total de User Stories | 43 |
-| ✅ Done | 10 |
+| ✅ Done | 11 |
 | 🔧 In Progress | 0 |
-| ⏳ Pending | 33 |
-| Progresso | 23.3% |
+| ⏳ Pending | 32 |
+| Progresso | 25.6% |
