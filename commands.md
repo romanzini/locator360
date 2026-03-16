@@ -19,10 +19,25 @@ Resultado esperado (todos healthy):
 fl-kafka-ui    Up 15 minutes             0.0.0.0:8090->8080/tcp, [::]:8090->8080/tcp
 fl-kafka       Up 15 minutes (healthy)   0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
 fl-redis       Up 15 minutes (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+fl-redis-commander Up 15 minutes         0.0.0.0:8081->8081/tcp, [::]:8081->8081/tcp
 fl-otel-lgtm   Up 15 minutes             0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp,
 0.0.0.0:4317-4318->4317-4318/tcp, [::]:4317-4318->4317-4318/tcp, 0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
 fl-zookeeper   Up 15 minutes (healthy)   2181/tcp, 2888/tcp, 3888/tcp
 fl-postgres    Up 15 minutes (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+## 2.1 Redis GUI (Redis Commander)
+
+```powershell
+docker run --rm -d --name redis-commander -p 8081:8081 `
+  --env REDIS_HOSTS=local:host.docker.internal:6379 `
+  rediscommander/redis-commander:latest
+```
+
+```text
+http://localhost:8081
+```
+
+> Linux: se `host.docker.internal` não resolver, substitua pelo host/IP do Docker.
 
 ## 3. Executar a aplicação Spring Boot (via Docker Maven)
 
