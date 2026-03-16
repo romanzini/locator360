@@ -5,6 +5,7 @@ import com.locator360.core.domain.location.Location;
 import com.locator360.core.domain.location.LocationSharingState;
 import com.locator360.core.domain.user.User;
 import com.locator360.core.port.in.dto.output.MemberLocationOutputDto;
+import com.locator360.core.port.in.dto.output.SharingStatus;
 import com.locator360.core.port.in.location.GetCircleMembersLocationUseCase;
 import com.locator360.core.port.out.CircleMemberRepository;
 import com.locator360.core.port.out.LastLocationCache;
@@ -12,9 +13,12 @@ import com.locator360.core.port.out.LocationSharingStateRepository;
 import com.locator360.core.port.out.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +34,7 @@ public class GetCircleMembersLocationService implements GetCircleMembersLocation
     private final LastLocationCache lastLocationCache;
     private final LocationSharingStateRepository locationSharingStateRepository;
     private final UserRepository userRepository;
+    private final Duration staleThreshold;
 
     @Override
     public List<MemberLocationOutputDto> execute(UUID userId, UUID circleId) {
@@ -52,7 +57,19 @@ public class GetCircleMembersLocationService implements GetCircleMembersLocation
             Optional<LocationSharingState> sharingState =
                     locationSharingStateRepository.findByUserIdAndCircleId(memberUserId, circleId);
 
-            if (sharingState.isPresent() && !sharingState.get().isSharingActive()) {
+            boolean isPaused = sharingState.isPresent() && !sharingState.get().isSharingActive();
+
+            if (isPaused) {
+                Optional<User> user = userRepository.findById(memberUserId);
+                if (user.isEmpty()) {
+                    continue;
+                }
+                result.add(MemberLocationOutputDto.builder()
+                        .userId(memberUserId)
+                        .fullName(user.get().getFullName())
+                        .profilePhotoUrl(user.get().getProfilePhotoUrl())
+                        .sharingStatus(SharingStatus.PAUSED)
+                        .build());
                 continue;
             }
 
@@ -69,6 +86,8 @@ public class GetCircleMembersLocationService implements GetCircleMembersLocation
             Location location = lastLocation.get();
             User memberUser = user.get();
 
+            SharingStatus status = determineSharingStatus(location.getRecordedAt());
+
             result.add(MemberLocationOutputDto.builder()
                     .userId(memberUserId)
                     .fullName(memberUser.getFullName())
@@ -80,10 +99,20 @@ public class GetCircleMembersLocationService implements GetCircleMembersLocation
                     .isMoving(location.isMoving())
                     .batteryLevel(location.getBatteryLevel())
                     .lastUpdatedAt(location.getRecordedAt())
+                    .sharingStatus(status)
                     .build());
         }
 
         log.info("Returned {} member locations for circle: {}", result.size(), circleId);
         return result;
+    }
+
+    private SharingStatus determineSharingStatus(Instant recordedAt) {
+        if (recordedAt == null) {
+            return SharingStatus.STALE;
+        }
+        return Duration.between(recordedAt, Instant.now()).compareTo(staleThreshold) > 0
+                ? SharingStatus.STALE
+                : SharingStatus.ONLINE;
     }
 }
