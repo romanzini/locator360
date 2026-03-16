@@ -457,12 +457,24 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/locations/stream" `
 $status
 ```
 
-### US-020: rodar testes automatizados do pacote
+### US-021: Ver membros no mapa
+
+```powershell
+# Primeiro faça login para obter o token (veja US-002 acima)
+# Obter localização de todos os membros do círculo (retorna 200 OK)
+$locations = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/circles/REPLACE_WITH_CIRCLE_ID/members/locations" `
+  -Method GET `
+  -Headers @{ Authorization = "Bearer $accessToken" }
+
+$locations | ConvertTo-Json -Depth 5
+```
+
+### US-020/021: rodar testes automatizados do pacote
 
 ```powershell
 docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   maven:3.9.9-eclipse-temurin-17 `
-  mvn "-Dtest=LocationTest,LocationSharingStateTest,StreamLocationServiceTest,LocationControllerTest" `
+  mvn "-Dtest=LocationTest,LocationSharingStateTest,StreamLocationServiceTest,GetCircleMembersLocationServiceTest,LocationControllerTest" `
   test "-Dsurefire.useFile=false"
 ```
 
