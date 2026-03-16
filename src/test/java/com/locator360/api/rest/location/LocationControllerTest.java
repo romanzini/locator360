@@ -5,9 +5,10 @@ import com.locator360.api.rest.config.JwtAuthenticationFilter;
 import com.locator360.api.rest.config.SecurityConfig;
 import com.locator360.core.port.in.dto.output.MemberLocationOutputDto;
 import com.locator360.core.port.in.location.GetCircleMembersLocationUseCase;
+import com.locator360.core.port.in.location.PauseLocationSharingUseCase;
+import com.locator360.core.port.in.location.ResumeLocationSharingUseCase;
 import com.locator360.core.port.in.location.StreamLocationUseCase;
 import com.locator360.core.port.out.TokenProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -38,14 +40,17 @@ class LocationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @MockitoBean
     private StreamLocationUseCase streamLocationUseCase;
 
     @MockitoBean
     private GetCircleMembersLocationUseCase getCircleMembersLocationUseCase;
+
+    @MockitoBean
+    private PauseLocationSharingUseCase pauseLocationSharingUseCase;
+
+    @MockitoBean
+    private ResumeLocationSharingUseCase resumeLocationSharingUseCase;
 
     @MockitoBean
     private TokenProvider tokenProvider;
@@ -77,9 +82,9 @@ class LocationControllerTest {
                     """;
 
             mockMvc.perform(post("/api/v1/locations/stream")
-                            .header("Authorization", "Bearer " + validToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
                     .andExpect(status().isAccepted());
 
             verify(streamLocationUseCase).execute(eq(userId), any());
@@ -116,9 +121,9 @@ class LocationControllerTest {
                     """;
 
             mockMvc.perform(post("/api/v1/locations/stream")
-                            .header("Authorization", "Bearer " + validToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
                     .andExpect(status().isAccepted());
 
             verify(streamLocationUseCase).execute(eq(userId), any());
@@ -136,9 +141,9 @@ class LocationControllerTest {
                     """;
 
             mockMvc.perform(post("/api/v1/locations/stream")
-                            .header("Authorization", "Bearer " + validToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
                     .andExpect(status().isBadRequest());
         }
 
@@ -154,9 +159,9 @@ class LocationControllerTest {
                     """;
 
             mockMvc.perform(post("/api/v1/locations/stream")
-                            .header("Authorization", "Bearer " + validToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
                     .andExpect(status().isBadRequest());
         }
 
@@ -178,9 +183,9 @@ class LocationControllerTest {
                     """;
 
             mockMvc.perform(post("/api/v1/locations/stream")
-                            .header("Authorization", "Bearer " + validToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
                     .andExpect(status().isBadRequest());
         }
 
@@ -201,8 +206,8 @@ class LocationControllerTest {
                     """;
 
             mockMvc.perform(post("/api/v1/locations/stream")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestBody))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
                     .andExpect(status().isUnauthorized());
         }
     }
@@ -235,14 +240,13 @@ class LocationControllerTest {
                             .isMoving(true)
                             .batteryLevel(85)
                             .lastUpdatedAt(lastUpdated)
-                            .build()
-            );
+                            .build());
 
             when(getCircleMembersLocationUseCase.execute(userId, circleId))
                     .thenReturn(locations);
 
             mockMvc.perform(get("/api/v1/circles/{circleId}/members/locations", circleId)
-                            .header("Authorization", "Bearer " + validToken))
+                    .header("Authorization", "Bearer " + validToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].userId").value(memberUserId.toString()))
                     .andExpect(jsonPath("$[0].fullName").value("John Doe"))
@@ -265,7 +269,7 @@ class LocationControllerTest {
                     .thenReturn(List.of());
 
             mockMvc.perform(get("/api/v1/circles/{circleId}/members/locations", circleId)
-                            .header("Authorization", "Bearer " + validToken))
+                    .header("Authorization", "Bearer " + validToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$").isEmpty());
@@ -279,7 +283,7 @@ class LocationControllerTest {
                     .thenThrow(new IllegalArgumentException("User is not a member of this circle"));
 
             mockMvc.perform(get("/api/v1/circles/{circleId}/members/locations", circleId)
-                            .header("Authorization", "Bearer " + validToken))
+                    .header("Authorization", "Bearer " + validToken))
                     .andExpect(status().isUnprocessableEntity());
         }
 
@@ -287,6 +291,116 @@ class LocationControllerTest {
         @DisplayName("should return 401 when not authenticated")
         void shouldReturn401WhenNotAuthenticated() throws Exception {
             mockMvc.perform(get("/api/v1/circles/{circleId}/members/locations", circleId))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/circles/{circleId}/location-sharing/pause")
+    class PauseLocationSharingTests {
+
+        private final UUID userId = UUID.randomUUID();
+        private final UUID circleId = UUID.randomUUID();
+        private final String validToken = "valid-jwt-token";
+
+        @Test
+        @DisplayName("should return 202 when location sharing is paused with pausedUntil")
+        void shouldReturn202WhenPausedWithPausedUntil() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            String requestBody = """
+                    {
+                        "pausedUntil": "2026-12-31T23:59:59Z"
+                    }
+                    """;
+
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/pause", circleId)
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
+                    .andExpect(status().isAccepted());
+
+            verify(pauseLocationSharingUseCase).execute(eq(userId), eq(circleId), any());
+        }
+
+        @Test
+        @DisplayName("should return 202 when location sharing is paused indefinitely")
+        void shouldReturn202WhenPausedIndefinitely() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            String requestBody = "{}";
+
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/pause", circleId)
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
+                    .andExpect(status().isAccepted());
+
+            verify(pauseLocationSharingUseCase).execute(eq(userId), eq(circleId), any());
+        }
+
+        @Test
+        @DisplayName("should return 422 when business validation fails")
+        void shouldReturn422WhenBusinessValidationFails() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+            doThrow(new IllegalArgumentException("User is not a member of this circle"))
+                    .when(pauseLocationSharingUseCase)
+                    .execute(eq(userId), eq(circleId), any());
+
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/pause", circleId)
+                    .header("Authorization", "Bearer " + validToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                    .andExpect(status().isUnprocessableEntity());
+        }
+
+        @Test
+        @DisplayName("should return 401 when not authenticated")
+        void shouldReturn401WhenNotAuthenticated() throws Exception {
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/pause", circleId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/circles/{circleId}/location-sharing/resume")
+    class ResumeLocationSharingTests {
+
+        private final UUID userId = UUID.randomUUID();
+        private final UUID circleId = UUID.randomUUID();
+        private final String validToken = "valid-jwt-token";
+
+        @Test
+        @DisplayName("should return 202 when location sharing is resumed")
+        void shouldReturn202WhenResumed() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/resume", circleId)
+                    .header("Authorization", "Bearer " + validToken))
+                    .andExpect(status().isAccepted());
+
+            verify(resumeLocationSharingUseCase).execute(userId, circleId);
+        }
+
+        @Test
+        @DisplayName("should return 422 when business validation fails")
+        void shouldReturn422WhenBusinessValidationFails() throws Exception {
+            when(tokenProvider.validateToken(validToken)).thenReturn(userId);
+            doThrow(new IllegalArgumentException("User is not a member of this circle"))
+                    .when(resumeLocationSharingUseCase)
+                    .execute(userId, circleId);
+
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/resume", circleId)
+                    .header("Authorization", "Bearer " + validToken))
+                    .andExpect(status().isUnprocessableEntity());
+        }
+
+        @Test
+        @DisplayName("should return 401 when not authenticated")
+        void shouldReturn401WhenNotAuthenticated() throws Exception {
+            mockMvc.perform(post("/api/v1/circles/{circleId}/location-sharing/resume", circleId))
                     .andExpect(status().isUnauthorized());
         }
     }
