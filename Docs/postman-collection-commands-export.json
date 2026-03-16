@@ -704,6 +704,100 @@
               ]
             }
           }
+        },
+        {
+          "name": "Pause Location Sharing (with pausedUntil)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pausedUntil\": \"2026-03-16T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/location-sharing/pause",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "location-sharing",
+                "pause"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Pause Location Sharing (indefinite)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/location-sharing/pause",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "location-sharing",
+                "pause"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resume Location Sharing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/circles/{{circleId}}/location-sharing/resume",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "circles",
+                "{{circleId}}",
+                "location-sharing",
+                "resume"
+              ]
+            }
+          }
         }
       ]
     },
