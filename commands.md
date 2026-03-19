@@ -57,6 +57,20 @@ docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   maven:3.9.9-eclipse-temurin-17 mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
 
+```bash
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app \
+  --network fl-network -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/family_locator \
+  -e SPRING_DATA_REDIS_HOST=redis \
+  -e SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092 \
+  -e MANAGEMENT_OTLP_TRACING_ENDPOINT=http://otel-lgtm:4318/v1/traces \
+  -e MANAGEMENT_OTLP_METRICS_ENDPOINT=http://otel-lgtm:4318/v1/metrics \
+  -e LOKI_HOST=otel-lgtm \
+  maven:3.9.9-eclipse-temurin-17 mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+``` 
+
 ## 3.1 Acessar o Grafana LGTM (logs, métricas e traces)
 
 ```
