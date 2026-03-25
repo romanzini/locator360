@@ -37,6 +37,8 @@ Agente no Terminal
 
 A IA **não faz push direto para main**. Todo código passa por PR + CI verde.
 
+Para saber quando usar cada agent e cada skill customizados do projeto, consulte [Docs/copilot-agents-and-skills-guide.md](/home/romanzini/repos/locator360/Docs/copilot-agents-and-skills-guide.md).
+
 ---
 
 ## Os 7 Passos do Desenvolvimento com IA

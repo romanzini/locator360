@@ -6,6 +6,18 @@ O **Locator 360** é uma plataforma robusta de monitoramento familiar focada em 
 
 Este projeto backend foi desenhado para ser escalável, seguro e resiliente, utilizando uma arquitetura moderna baseada em domínio.
 
+Para o fluxo de trabalho com Copilot, agents e skills customizados do repositório, consulte [Docs/copilot-agents-and-skills-guide.md](/home/romanzini/repos/locator360/Docs/copilot-agents-and-skills-guide.md).
+
+Prompts compartilhados disponíveis:
+
+- [.github/prompts/locator360-onboarding.prompt.md](/home/romanzini/repos/locator360/.github/prompts/locator360-onboarding.prompt.md)
+- [.github/prompts/feature-planning.prompt.md](/home/romanzini/repos/locator360/.github/prompts/feature-planning.prompt.md)
+- [.github/prompts/tdd-implementation.prompt.md](/home/romanzini/repos/locator360/.github/prompts/tdd-implementation.prompt.md)
+- [.github/prompts/review.prompt.md](/home/romanzini/repos/locator360/.github/prompts/review.prompt.md)
+- [.github/prompts/debug.prompt.md](/home/romanzini/repos/locator360/.github/prompts/debug.prompt.md)
+- [.github/prompts/critical-flow.prompt.md](/home/romanzini/repos/locator360/.github/prompts/critical-flow.prompt.md)
+- [.github/prompts/location-debug.prompt.md](/home/romanzini/repos/locator360/.github/prompts/location-debug.prompt.md)
+
 ---
 
 ## 🚀 Funcionalidades Principais
