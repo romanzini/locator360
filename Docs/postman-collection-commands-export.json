@@ -651,6 +651,26 @@
             }
           }
         },
+          {
+            "name": "Test Geofence PlaceEvent (US-031)",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"circleId\": \"{{circleId}}\",\n  \"events\": [\n    {\n      \"latitude\": -23.561414,\n      \"longitude\": -46.655881,\n      \"accuracyMeters\": 10.0,\n      \"speedMps\": 0,\n      \"headingDegrees\": 180,\n      \"altitudeMeters\": 760,\n      \"source\": \"GPS\",\n      \"recordedAt\": \"2026-03-26T15:00:00Z\",\n      \"isMoving\": true,\n      \"batteryLevel\": 80\n    }\n  ]\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/v1/locations/stream",
+                "host": [ "{{baseUrl}}" ],
+                "path": [ "api", "v1", "locations", "stream" ]
+              }
+            },
+            "description": "Envia um evento de localização simulando entrada em geofence para testar PlaceEvent (US-031). Requer placeId/circleId válidos. Verifique logs ou banco para PlaceEvent gerado."
+          },
         {
           "name": "Stream Location Events (without circleId)",
           "request": {

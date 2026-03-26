@@ -255,6 +255,44 @@ $status
 docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
   maven:3.9.9-eclipse-temurin-17 `
   mvn "-Dtest=AuthControllerTest,LoginServiceTest,RefreshTokenServiceTest,LogoutServiceTest,AuthenticationServiceTest,JwtTokenProviderTest,DeviceTest,DeviceJpaRepositoryAdapterTest" `
+### US-031: testar detecção de entrada/saída em geofence (PlaceEvent)
+
+```powershell
+# 1. Crie um lugar (geofence) conforme US-030 e anote o placeId e circleId
+# 2. Envie um evento de localização simulando entrada na área do lugar:
+$locationEvent = @{
+  circleId = "REPLACE_WITH_CIRCLE_ID"
+  events = @(@{
+    latitude = -23.561414
+    longitude = -46.655881
+    accuracyMeters = 10.0
+    speedMps = 0
+    headingDegrees = 180
+    altitudeMeters = 760
+    source = "GPS"
+    recordedAt = "2026-03-26T15:00:00Z"
+    isMoving = $true
+    batteryLevel = 80
+  })
+}
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/locations/stream" `
+  -Method POST -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $accessToken" } `
+  -Body ($locationEvent | ConvertTo-Json -Depth 5) -StatusCodeVariable status
+$status
+
+# 3. Verifique se um PlaceEvent foi gerado (requer endpoint futuro ou consulta no banco)
+# 4. Verifique logs e métricas no Grafana LGTM (Loki/Prometheus)
+```
+
+### US-031: rodar testes automatizados do pacote
+
+```powershell
+docker run --rm -v "${PWD}:/app" -v maven-repo:/root/.m2 -w /app `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn "-Dtest=PlaceEventTest,GeofenceDetectionServiceTest,GeofenceProcessingServiceTest,GeofenceConsumerTest" `
+  test "-Dsurefire.useFile=false"
+```
   test "-Dsurefire.useFile=false"
 ```
 
