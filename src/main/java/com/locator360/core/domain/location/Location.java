@@ -5,6 +5,25 @@ import java.util.UUID;
 
 public class Location {
 
+    // Construtor padrão para deserialização do Jackson/Kafka
+    protected Location() {
+        this.id = null;
+        this.userId = null;
+        this.circleId = null;
+        this.latitude = 0;
+        this.longitude = 0;
+        this.accuracyMeters = null;
+        this.speedMps = null;
+        this.headingDegrees = null;
+        this.altitudeMeters = null;
+        this.source = null;
+        this.recordedAt = null;
+        this.receivedAt = null;
+        this.isMoving = false;
+        this.batteryLevel = null;
+        this.createdAt = null;
+    }
+
     private final UUID id;
     private final UUID userId;
     private final UUID circleId;
