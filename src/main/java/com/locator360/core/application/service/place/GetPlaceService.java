@@ -36,6 +36,19 @@ public class GetPlaceService implements GetPlaceUseCase {
     }
 
     log.debug("Returning place: {} in circle: {}", placeId, circleId);
-    return modelMapper.map(place, PlaceOutputDto.class);
+    return PlaceOutputDto.builder()
+        .id(place.getId())
+        .circleId(place.getCircleId())
+        .name(place.getName())
+        .type(place.getType() != null ? place.getType().name() : null)
+        .addressText(place.getAddressText())
+        .latitude(place.getLatitude())
+        .longitude(place.getLongitude())
+        .radiusMeters(place.getRadiusMeters())
+        .active(place.isActive())
+        .createdByUserId(place.getCreatedByUserId())
+        .createdAt(place.getCreatedAt())
+        .updatedAt(place.getUpdatedAt())
+        .build();
   }
 }

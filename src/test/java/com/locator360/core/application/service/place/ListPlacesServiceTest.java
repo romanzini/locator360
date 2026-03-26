@@ -74,9 +74,7 @@ class ListPlacesServiceTest {
                     .thenReturn(Optional.of(activeMember));
             when(placeRepository.findActiveByCircleId(circleId))
                     .thenReturn(List.of(place1, place2));
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
-                    .thenReturn(PlaceOutputDto.builder().name("Casa").build())
-                    .thenReturn(PlaceOutputDto.builder().name("Escola").build());
+            // modelMapper not used anymore; service maps manually
 
             List<PlaceOutputDto> result = listPlacesService.execute(userId, circleId);
 

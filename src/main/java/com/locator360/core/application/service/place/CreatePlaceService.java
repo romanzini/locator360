@@ -50,6 +50,19 @@ public class CreatePlaceService implements CreatePlaceUseCase {
     meterRegistry.counter("places.created").increment();
     log.info("Place created: {} in circle: {}", savedPlace.getId(), circleId);
 
-    return modelMapper.map(savedPlace, PlaceOutputDto.class);
+    return PlaceOutputDto.builder()
+        .id(savedPlace.getId())
+        .circleId(savedPlace.getCircleId())
+        .name(savedPlace.getName())
+        .type(savedPlace.getType() != null ? savedPlace.getType().name() : null)
+        .addressText(savedPlace.getAddressText())
+        .latitude(savedPlace.getLatitude())
+        .longitude(savedPlace.getLongitude())
+        .radiusMeters(savedPlace.getRadiusMeters())
+        .active(savedPlace.isActive())
+        .createdByUserId(savedPlace.getCreatedByUserId())
+        .createdAt(savedPlace.getCreatedAt())
+        .updatedAt(savedPlace.getUpdatedAt())
+        .build();
   }
 }
