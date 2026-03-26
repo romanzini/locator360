@@ -46,6 +46,7 @@
 | US | Descrição | Status | PR(s) | Data |
 |----|-----------|--------|-------|------|
 | US-030 | Cadastrar um lugar | ⏳ Pending | — | — |
+| US-030 | Cadastrar um lugar | ✅ Done | (implemented in main) | 2026-03-26 |
 | US-031 | Receber alertas de entrada/saída | ⏳ Pending | — | — |
 | US-032 | Configurar horários de relevância | ⏳ Pending | — | — |
 
