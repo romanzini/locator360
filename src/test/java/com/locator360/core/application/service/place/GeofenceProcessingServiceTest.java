@@ -34,6 +34,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GeofenceProcessingServiceTest {
+        @Mock
+        private PlaceRepository placeRepository;
 
     @Mock
     private GeofenceQueryPort geofenceQueryPort;
@@ -71,8 +73,8 @@ class GeofenceProcessingServiceTest {
     @Mock
     private Timer.Sample timerSample;
 
-    @InjectMocks
-    private GeofenceProcessingService geofenceProcessingService;
+        @InjectMocks
+        private GeofenceProcessingService geofenceProcessingService;
 
     @Nested
     @DisplayName("execute")
@@ -112,9 +114,9 @@ class GeofenceProcessingServiceTest {
         @Test
         @DisplayName("should detect ENTER when user enters a geofence for the first time")
         void shouldDetectEnterWhenFirstTime() {
+
             when(circleMemberRepository.findByUserId(userId)).thenReturn(List.of(member));
-            when(geofenceQueryPort.findPlacesNearPoint(anyDouble(), anyDouble(), anyList()))
-                    .thenReturn(List.of(place));
+            when(placeRepository.findActiveByCircleId(circleId)).thenReturn(List.of(place));
             when(geofenceDetectionService.isInsideGeofence(anyDouble(), anyDouble(), any(Place.class)))
                     .thenReturn(true);
             when(placeEventRepository.findLastByPlaceIdAndUserId(placeId, userId))
@@ -145,9 +147,9 @@ class GeofenceProcessingServiceTest {
             PlaceEvent lastEnter = PlaceEvent.restore(UUID.randomUUID(), placeId, circleId,
                     userId, PlaceEventType.ENTER, null, Instant.now().minusSeconds(600), Instant.now());
 
+
             when(circleMemberRepository.findByUserId(userId)).thenReturn(List.of(member));
-            when(geofenceQueryPort.findPlacesNearPoint(anyDouble(), anyDouble(), anyList()))
-                    .thenReturn(List.of(place));
+            when(placeRepository.findActiveByCircleId(circleId)).thenReturn(List.of(place));
             when(geofenceDetectionService.isInsideGeofence(anyDouble(), anyDouble(), any(Place.class)))
                     .thenReturn(false);
             when(placeEventRepository.findLastByPlaceIdAndUserId(placeId, userId))
@@ -176,9 +178,9 @@ class GeofenceProcessingServiceTest {
             PlaceEvent lastEnter = PlaceEvent.restore(UUID.randomUUID(), placeId, circleId,
                     userId, PlaceEventType.ENTER, null, Instant.now().minusSeconds(60), Instant.now());
 
+
             when(circleMemberRepository.findByUserId(userId)).thenReturn(List.of(member));
-            when(geofenceQueryPort.findPlacesNearPoint(anyDouble(), anyDouble(), anyList()))
-                    .thenReturn(List.of(place));
+            when(placeRepository.findActiveByCircleId(circleId)).thenReturn(List.of(place));
             when(geofenceDetectionService.isInsideGeofence(anyDouble(), anyDouble(), any(Place.class)))
                     .thenReturn(true);
             when(placeEventRepository.findLastByPlaceIdAndUserId(placeId, userId))
@@ -196,8 +198,7 @@ class GeofenceProcessingServiceTest {
         @DisplayName("should not create event when no places are nearby")
         void shouldNotCreateEventWhenNoPlacesNearby() {
             when(circleMemberRepository.findByUserId(userId)).thenReturn(List.of(member));
-            when(geofenceQueryPort.findPlacesNearPoint(anyDouble(), anyDouble(), anyList()))
-                    .thenReturn(List.of());
+            when(placeRepository.findActiveByCircleId(circleId)).thenReturn(List.of());
 
             geofenceProcessingService.execute(location);
 
@@ -210,8 +211,7 @@ class GeofenceProcessingServiceTest {
         @DisplayName("should not send notification when policy is inactive")
         void shouldNotSendNotificationWhenPolicyInactive() {
             when(circleMemberRepository.findByUserId(userId)).thenReturn(List.of(member));
-            when(geofenceQueryPort.findPlacesNearPoint(anyDouble(), anyDouble(), anyList()))
-                    .thenReturn(List.of(place));
+            when(placeRepository.findActiveByCircleId(circleId)).thenReturn(List.of(place));
             when(geofenceDetectionService.isInsideGeofence(anyDouble(), anyDouble(), any(Place.class)))
                     .thenReturn(true);
             when(placeEventRepository.findLastByPlaceIdAndUserId(placeId, userId))
@@ -238,9 +238,9 @@ class GeofenceProcessingServiceTest {
                     UUID.randomUUID(), CircleRole.ADMIN, MemberStatus.ACTIVE,
                     Instant.now(), null, Instant.now(), Instant.now());
 
+
             when(circleMemberRepository.findByUserId(userId)).thenReturn(List.of(member));
-            when(geofenceQueryPort.findPlacesNearPoint(anyDouble(), anyDouble(), anyList()))
-                    .thenReturn(List.of(place));
+            when(placeRepository.findActiveByCircleId(circleId)).thenReturn(List.of(place));
             when(geofenceDetectionService.isInsideGeofence(anyDouble(), anyDouble(), any(Place.class)))
                     .thenReturn(true);
             when(placeEventRepository.findLastByPlaceIdAndUserId(placeId, userId))
@@ -271,7 +271,7 @@ class GeofenceProcessingServiceTest {
 
             geofenceProcessingService.execute(location);
 
-            verify(geofenceQueryPort, never()).findPlacesNearPoint(anyDouble(), anyDouble(), anyList());
+            verify(placeRepository, never()).findActiveByCircleId(any());
         }
     }
 }
