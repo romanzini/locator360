@@ -26,15 +26,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GeofenceProcessingService implements ProcessGeofenceUseCase {
 
-    private final GeofenceQueryPort geofenceQueryPort;
-    private final PlaceEventRepository placeEventRepository;
-    private final PlaceAlertPolicyRepository placeAlertPolicyRepository;
-    private final PlaceAlertTargetRepository placeAlertTargetRepository;
-    private final GeofenceEventPublisher geofenceEventPublisher;
-    private final NotificationCommandPublisher notificationCommandPublisher;
-    private final CircleMemberRepository circleMemberRepository;
-    private final GeofenceDetectionService geofenceDetectionService;
-    private final MeterRegistry meterRegistry;
+        private final GeofenceQueryPort geofenceQueryPort;
+        private final PlaceRepository placeRepository;
+        private final PlaceEventRepository placeEventRepository;
+        private final PlaceAlertPolicyRepository placeAlertPolicyRepository;
+        private final PlaceAlertTargetRepository placeAlertTargetRepository;
+        private final GeofenceEventPublisher geofenceEventPublisher;
+        private final NotificationCommandPublisher notificationCommandPublisher;
+        private final CircleMemberRepository circleMemberRepository;
+        private final GeofenceDetectionService geofenceDetectionService;
+        private final MeterRegistry meterRegistry;
 
     @Override
     public void execute(Location location) {
@@ -52,15 +53,17 @@ public class GeofenceProcessingService implements ProcessGeofenceUseCase {
                 .map(CircleMember::getCircleId)
                 .collect(Collectors.toList());
 
-        List<Place> nearbyPlaces = geofenceQueryPort.findPlacesNearPoint(
-                location.getLatitude(), location.getLongitude(), circleIds);
+        // Buscar todos os lugares ativos dos círculos do usuário
+        List<Place> allActivePlaces = circleIds.stream()
+                .flatMap(circleId -> placeRepository.findActiveByCircleId(circleId).stream())
+                .collect(Collectors.toList());
 
-        if (nearbyPlaces.isEmpty()) {
-            log.debug("No places near user: {}", location.getUserId());
+        if (allActivePlaces.isEmpty()) {
+            log.debug("No active places for user: {}", location.getUserId());
             return;
         }
 
-        for (Place place : nearbyPlaces) {
+        for (Place place : allActivePlaces) {
             processPlaceGeofence(location, place);
         }
     }
@@ -71,6 +74,14 @@ public class GeofenceProcessingService implements ProcessGeofenceUseCase {
 
         Optional<PlaceEvent> lastEvent = placeEventRepository
                 .findLastByPlaceIdAndUserId(place.getId(), location.getUserId());
+
+        // Só considerar transição se o novo recordedAt for maior que o occurredAt do último evento
+        if (lastEvent.isPresent() &&
+                (location.getRecordedAt() == null || !location.getRecordedAt().isAfter(lastEvent.get().getOccurredAt()))) {
+            log.debug("Ignoring geofence event for user: {} at place: {} due to non-increasing timestamp (last: {}, new: {})",
+                    location.getUserId(), place.getId(), lastEvent.get().getOccurredAt(), location.getRecordedAt());
+            return;
+        }
 
         boolean wasInside = lastEvent
                 .map(e -> e.getEventType() == PlaceEventType.ENTER)
