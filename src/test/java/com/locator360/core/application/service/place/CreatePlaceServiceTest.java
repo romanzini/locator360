@@ -94,7 +94,7 @@ class CreatePlaceServiceTest {
                     .name("Casa")
                     .type("HOME")
                     .build();
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
+            lenient().when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
                     .thenReturn(expectedOutput);
 
             PlaceOutputDto result = createPlaceService.execute(userId, circleId, validInput);
@@ -113,7 +113,7 @@ class CreatePlaceServiceTest {
             when(placeRepository.save(any(Place.class))).thenAnswer(inv -> inv.getArgument(0));
             when(placeAlertPolicyRepository.save(any(PlaceAlertPolicy.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
+            lenient().when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
                     .thenReturn(PlaceOutputDto.builder().build());
 
             createPlaceService.execute(userId, circleId, validInput);
@@ -141,7 +141,7 @@ class CreatePlaceServiceTest {
             when(placeRepository.save(any(Place.class))).thenAnswer(inv -> inv.getArgument(0));
             when(placeAlertPolicyRepository.save(any(PlaceAlertPolicy.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
+            lenient().when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
                     .thenReturn(PlaceOutputDto.builder().build());
 
             createPlaceService.execute(userId, circleId, validInput);
@@ -174,7 +174,7 @@ class CreatePlaceServiceTest {
             when(placeRepository.save(any(Place.class))).thenAnswer(inv -> inv.getArgument(0));
             when(placeAlertPolicyRepository.save(any(PlaceAlertPolicy.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
+            lenient().when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
                     .thenReturn(PlaceOutputDto.builder().build());
 
             createPlaceService.execute(userId, circleId, validInput);

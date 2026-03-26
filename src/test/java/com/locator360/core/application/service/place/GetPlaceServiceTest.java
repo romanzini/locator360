@@ -71,11 +71,7 @@ class GetPlaceServiceTest {
             when(circleMemberRepository.findByCircleIdAndUserId(circleId, userId))
                     .thenReturn(Optional.of(activeMember));
             when(placeRepository.findById(placeId)).thenReturn(Optional.of(existingPlace));
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
-                    .thenReturn(PlaceOutputDto.builder()
-                            .id(placeId)
-                            .name("Casa")
-                            .build());
+            // modelMapper not used anymore; service maps manually
 
             PlaceOutputDto result = getPlaceService.execute(userId, circleId, placeId);
 

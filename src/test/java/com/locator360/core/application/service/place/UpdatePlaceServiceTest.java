@@ -76,12 +76,7 @@ class UpdatePlaceServiceTest {
                     .thenReturn(Optional.of(adminMember));
             when(placeRepository.findById(placeId)).thenReturn(Optional.of(existingPlace));
             when(placeRepository.save(any(Place.class))).thenAnswer(inv -> inv.getArgument(0));
-            when(modelMapper.map(any(Place.class), eq(PlaceOutputDto.class)))
-                    .thenReturn(PlaceOutputDto.builder()
-                            .id(placeId)
-                            .name("Escola")
-                            .type("SCHOOL")
-                            .build());
+            // service maps manually; no modelMapper stubbing required
 
             PlaceOutputDto result = updatePlaceService.execute(userId, circleId, placeId, validInput);
 
